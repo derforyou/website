@@ -126,7 +126,7 @@ react-router-cf/
 │   └── root.tsx      # Root component
 ├── public/           # Static assets
 ├── server/           # Server-side code
-│   ├── load-context.ts # Load context for type safety
+│   ├── load-context.ts # Load context for context and type safety
 │   └── ...server files
 └── ...config files
 ```
