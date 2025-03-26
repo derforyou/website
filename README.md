@@ -8,11 +8,29 @@ Built this because I wanted a template that would allow me to deploy my React Ro
 - ⚡ Vite for lightning-fast development
 - 🎯 React Router for seamless navigation
 - ☁️ Cloudflare Pages integration
+- 🌐 Cloudflare D1 integration
 - 🎨 TailwindCSS for styling
 - 📦 TypeScript support
 - 🔄 Hot Module Replacement (HMR)
 - 🗄️ Drizzle & Kysely for database management
 - 🎬 Framer Motion for animations
+
+## 🗄️ About Cloudflare D1
+
+Cloudflare D1 is a serverless SQL database that runs on Cloudflare's global network. Key features include:
+
+- 📊 SQLite-compatible database built on libSQL
+- 🌐 Distributed across Cloudflare's global network
+- ⚡ Zero configuration required
+- 🔒 Automatic backups and high availability
+- 💰 Free tier with generous limits
+- 🚀 Low latency, as data is stored close to your users
+- 🔄 Seamless integration with Cloudflare Workers
+
+D1 is perfect for:
+- Web applications requiring global data access
+- Projects needing SQL without managing infrastructure
+- Applications with moderate data requirements (up to 100GB per database)
 
 ## 📦 Installation
 
@@ -121,6 +139,7 @@ react-router-cf/
 - [TailwindCSS](https://tailwindcss.com/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Cloudflare Pages](https://pages.cloudflare.com/)
+- [Cloudflare D1](https://www.cloudflare.com/products/d1/)
 - [Drizzle](https://orm.drizzle.team/)
 - [Kysely](https://kysely.dev/)
 - [Framer Motion](https://www.framer.com/motion/)
