@@ -17,7 +17,7 @@ JWT_PUBLIC = """
 """
 
 
-[[d1_databases]]
-binding = "db"
-database_name = ""
-database_id = ""
+# [[d1_databases]]
+# binding = "db"
+# database_name = ""
+# database_id = ""
