@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .better-scrollbar {
+    --sb-track-color: #369ef0;
+    --sb-thumb-color: #2f2f2f;
+    --sb-size: 7px;
+  }
+
+  .better-scrollbar::-webkit-scrollbar {
+    width: var(--sb-size);
+  }
+
+  .better-scrollbar::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 24px;
+  }
+
+  .better-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 24px;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    .better-scrollbar {
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
+  }
+
+  html,
+  body {
+    @apply font-main text-light;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  a,
+  strong {
+    @apply font-bold;
+  }
+
+  h1 {
+    @apply text-7xl;
+  }
+
+  h2 {
+    @apply text-6xl;
+  }
+
+  h3 {
+    @apply text-5xl;
+  }
+
+  h4 {
+    @apply text-4xl;
+  }
+
+  h5 {
+    @apply text-3xl;
+  }
+
+  p {
+    @apply text-base font-medium;
+  }
+
+  section {
+    @apply px-8 py-6;
+  }
+
+  /* -- Buttons */
+  .button {
+    @apply px-8 py-2 text-lg text-center duration-200;
+  }
+
+
+  /* -- Inputs */
+  .clearInput {
+    @apply focus:outline-none;
+  }
+
+  .commonInput {
+    @apply bg-bg px-8 py-4 rounded-full focus:outline-none focus:ring-[1px] w-full font-medium text-light focus:ring-accent--1t;
+  }
+
+  .commonInput::placeholder {
+    @apply opacity-65;
+  }
+
+  .commonInput:-webkit-autofill,
+  .commonInput:-webkit-autofill:hover,
+  .commonInput:-webkit-autofill:focus,
+  .commonInput:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s;
+  }
+
+  .smItemInput {
+    @apply bg-item-2 shadow-sm px-2 border border-alt-border-1 rounded-xl text-xl;
+  }
+
+
+  /* -- Others */
+  .sub-text-1 {
+    @apply opacity-65;
+  }
+
+  .sub-text-2 {
+    @apply opacity-80;
+  }
+}
+
+@screen 2xs {
+  :root {
+    @apply text-[55%];
+  }
+}
+
+@screen xs {
+  :root {
+    @apply text-[59%];
+  }
+}
+
+@screen sm {
+  :root {
+    @apply text-[68%];
+  }
+}
+
+@screen md {
+  :root {
+    @apply text-[63%];
+  }
+}
+
+@screen lg {
+  :root {
+    @apply text-[70%];
+  }
+}
+
+@screen xl {
+  :root {
+    @apply text-[80%];
+  }
+}
+
+@screen 2xl {
+  :root {
+    @apply text-[85%];
+  }
+}
+
+@screen 3xl {
+  :root {
+    @apply text-[90.5%];
+  }
+}
