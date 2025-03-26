@@ -107,6 +107,9 @@ react-router-cf/
 │   ├── routes/        # Application routes
 │   └── root.tsx      # Root component
 ├── public/           # Static assets
+├── server/           # Server-side code
+│   ├── load-context.ts # Load context for type safety
+│   └── ...server files
 └── ...config files
 ```
 
@@ -121,6 +124,18 @@ react-router-cf/
 - [Drizzle](https://orm.drizzle.team/)
 - [Kysely](https://kysely.dev/)
 - [Framer Motion](https://www.framer.com/motion/)
+
+## 🔍 Important Development Notes
+
+### Load Context File
+The `load-context.ts` file in the server directory is crucial for context availability and type safety in your application. It defines the context and types for your loader and action that will be available throughout your routes. After making any changes to this file, you must run:
+
+```bash
+# Generate new types and run type checking
+npm run typecheck
+```
+
+This command ensures your route types are properly updated and type-safe. Skipping this step after modifying the context may lead to type errors in your routes.
 
 ## 📝 License
 
