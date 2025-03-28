@@ -20,19 +20,20 @@
     "deploy": "npm run build && wrangler pages deploy"
   },
   "commandsDescription": {
-    "dev": "react-router dev",
-    "dev:wrangler": "wrangler pages dev",
-    "generate": "drizzle-kit generate",
-    "migrate:local": "wrangler d1 migrations apply --local db",
-    "migrate:prod": "wrangler d1 migrations apply --remote db",
-    "cf-typegen": "wrangler types",
-    "build": "react-router build",
-    "start": "wrangler pages dev ./build/client",
-    "preview": "npm run build && wrangler pages dev --local",
-    "deploy": "npm run build && wrangler pages deploy",
-    "lint": "biome lint",
-    "typecheck": "npm run cf-typegen && react-router typegen && tsc ",
-    "fmt": "biome format --write ./"
+    "dev": "Run development server",
+    "dev:wrangler": "Run development server with wrangler",
+    "generate": "Generate database schema",
+    "db:migrate:local": "Run database migrations locally",
+    "db:migrate:prod": "Run database migrations in production",
+    "db:fc": "Run database migrations for both local and production",
+    "cf-typegen": "Generate Cloudflare types",
+    "build": "Build production assets",
+    "start": "Run production server",
+    "preview": "Run production server in preview mode",
+    "lint": "Run linter",
+    "typecheck": "Run type checker",
+    "fmt": "Run formatter",
+    "deploy": "Deploy production assets"
   },
   "dependencies": {
     "@react-router/cloudflare": "^7.0.0",
