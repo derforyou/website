@@ -4,25 +4,21 @@ import type { PlatformProxy } from "wrangler";
 // import { Kysely } from "kysely";
 // import { D1Dialect } from "kysely-d1";
 
+// Run npm run typecheck to generate Cloudflare types!!!
 
-
-interface Env {
-  // db: D1Database;
-}
-
-export type Cloudflare = Omit<PlatformProxy<Env>, "dispose">;
-
+// Define environment interface
+export type CF = Omit<PlatformProxy<Env>, "dispose"> & { env: Cloudflare.Env }; // This is the Cloudflare environment
 declare module "react-router" {
   interface AppLoadContext {
-    cloudflare: Cloudflare;
-    // db: Kysely<Tables>;
+    cloudflare: CF;
   }
 }
 
 export type GetLoadContext = (args: {
   request: Request;
-  context: { cloudflare: Cloudflare }; // load context _before_ augmentation
+  context: { cloudflare: CF } & AppLoadContext; // load context _before_ augmentation
 }) => AppLoadContext;
+
 
 export const getLoadContext: GetLoadContext = ({ context }) => {
   // const db = new Kysely<Tables>({
