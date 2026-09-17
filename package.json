@@ -36,7 +36,7 @@
     "deploy": "Deploy production assets"
   },
   "dependencies": {
-    "@react-router/cloudflare": "^7.0.0",
+    "@react-router/cloudflare": "^7.18.4",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.41.0",
@@ -48,13 +48,13 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "react-router": "^7.0.0",
+    "react-router": "^7.18.4",
     "xu-lib-error-checker": "^0.1.2"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20250321.0",
-    "@react-router/dev": "^7.0.0",
+    "@react-router/dev": "^7.18.4",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
