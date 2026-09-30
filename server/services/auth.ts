@@ -1,66 +1,45 @@
-import BaseService from "./base";
-import type { Kysely } from "kysely";
-import * as jose from "jose";
-import type { Context } from "hono";
-import type { Tables } from "../database/tables";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { emailOTP } from "better-auth/plugins";
+import { drizzle } from "drizzle-orm/d1";
+import * as schema from "../database/schema";
+import type { RuntimeEnv } from "../lib/env";
+import { sendVerificationEmail } from "./email";
 
-export async function getKeyPair(algorithm: string, priv: string, pub: string) {
-  const privateKey = await jose.importPKCS8(priv, algorithm);
-  const publicKey = await jose.importSPKI(pub, algorithm);
+export type BetterAuthRuntimeEnv = RuntimeEnv;
 
-  return { algorithm, privateKey, publicKey };
+export function createAuth(env: BetterAuthRuntimeEnv) {
+  const database = drizzle(env.D1_DATABASE as D1Database, { schema });
+  const socialProviders =
+    env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+      ? {
+          github: {
+            clientId: env.GITHUB_CLIENT_ID,
+            clientSecret: env.GITHUB_CLIENT_SECRET,
+            scope: ["read:user", "user:email"],
+          },
+        }
+      : {};
+
+  return betterAuth({
+    database: drizzleAdapter(database, { provider: "sqlite" }),
+    baseURL: env.APP_URL ?? "http://localhost:5173",
+    secret: env.BETTER_AUTH_SECRET ?? "development-secret-change-me",
+    trustedOrigins: [env.APP_URL ?? "http://localhost:5173"],
+    socialProviders,
+    plugins: [
+      emailOTP({
+        sendVerificationOTP: async ({ email, otp, type }) => {
+          await sendVerificationEmail({ email, otp, type }, env);
+        },
+        otpLength: 6,
+        expiresIn: 300,
+      }),
+    ],
+    emailAndPassword: {
+      enabled: false,
+    },
+  });
 }
 
-export type KeyPair = Awaited<ReturnType<typeof getKeyPair>>;
-
-export class AuthService extends BaseService {
-  constructor(protected db: Kysely<Tables>, protected keyPair: KeyPair) {
-    super(db);
-  }
-
-  public async createToken(userId: string, noExpire?: boolean) {
-    const jwt = new jose.SignJWT()
-      .setSubject(userId)
-      .setIssuer("crosspad")
-      .setIssuedAt()
-      .setProtectedHeader({ alg: this.keyPair.algorithm });
-
-    if (noExpire) {
-      jwt.setExpirationTime("5y"); // Ustaw czas wygaśnięcia tylko jeśli token nie jest tokenem sesji
-    } else {
-      jwt.setExpirationTime("4h");
-    }
-    return jwt.sign(this.keyPair.privateKey);
-  }
-
-  public async verifyToken(token: string) {
-    const { payload } = await jose.jwtVerify(token, this.keyPair.publicKey);
-
-    if (!payload.sub || !payload.iat || !payload.exp) {
-      throw new Error("Invalid token");
-    }
-
-    return {
-      userId: payload.sub,
-      issuedAt: payload.iat,
-      expiresAt: payload.exp,
-    };
-  }
-
-  public async verifyRequest(c: Context) {
-    const cookie = c.req.header("login-session-token");
-
-    if (!cookie) {
-      return null;
-    }
-
-    const userSession = await this.verifyToken(cookie).catch(() => null);
-
-    if (!userSession) {
-      return null;
-    }
-
-    return userSession;
-  }
-}
-AuthService;
+export default createAuth;

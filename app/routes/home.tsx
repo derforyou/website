@@ -1,25 +1,21 @@
-import { useLoaderData } from "react-router";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router";
 
-export async function action({ request, context }: ActionFunctionArgs) {
-  return null;
-}
-
-export async function loader({ context }: LoaderFunctionArgs) {
-  console.log("Hi!");
-
-  return {
-    message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE,
-  };
-}
-
-export default function Home() {
-  const data = useLoaderData<typeof loader>();
-  
+export default function HomePage() {
   return (
-    <div className="min-h-svh">
-      <h1 className="text-9xl">Dupa</h1>
-      <h1>Hi! {data.message}</h1>
+    <div className="mx-auto max-w-5xl space-y-8 px-6 py-12">
+      <h1 className="text-5xl">Account home</h1>
+      <p className="max-w-2xl text-muted-foreground">
+        Manage your domains, contact identity, and API integrations from a single DER account.
+      </p>
+      <div className="flex gap-4">
+        <Link to="/dashboard">
+          <Button>Open dashboard</Button>
+        </Link>
+        <Link to="/domains/register">
+          <Button variant="outline">Register domain</Button>
+        </Link>
+      </div>
     </div>
   );
 }

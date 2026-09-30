@@ -19,9 +19,8 @@ export default function Alert({
   if (msg) {
     return (
       <div
-        className={` bg-bg p-4 border rounded-2xl w-full ${
-          colors.find((el) => el.type == type)?.color
-        }`}
+        className={` bg-bg p-4 border rounded-2xl w-full ${colors.find((el) => el.type === type)?.color
+          }`}
       >
         <strong className="">{msg}</strong>
       </div>

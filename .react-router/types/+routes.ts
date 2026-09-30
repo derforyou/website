@@ -17,12 +17,42 @@ type Pages = {
   "/home": {
     params: {};
   };
+  "/auth/signin": {
+    params: {};
+  };
+  "/auth/signup": {
+    params: {};
+  };
+  "/auth/verify": {
+    params: {};
+  };
+  "/dashboard": {
+    params: {};
+  };
+  "/domains": {
+    params: {};
+  };
+  "/domains/register": {
+    params: {};
+  };
+  "/settings": {
+    params: {};
+  };
+  "/settings/account": {
+    params: {};
+  };
+  "/settings/contact": {
+    params: {};
+  };
+  "/settings/api-keys": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/home";
+    page: "/" | "/home" | "/auth/signin" | "/auth/signup" | "/auth/verify" | "/dashboard" | "/domains" | "/domains/register" | "/settings" | "/settings/account" | "/settings/contact" | "/settings/api-keys";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -30,11 +60,51 @@ type RouteFiles = {
   };
   "routes/mainLayout.tsx": {
     id: "routes/mainLayout";
-    page: "/home";
+    page: "/home" | "/auth/signin" | "/auth/signup" | "/auth/verify" | "/dashboard" | "/domains" | "/domains/register" | "/settings" | "/settings/account" | "/settings/contact" | "/settings/api-keys";
   };
   "routes/home.tsx": {
     id: "routes/home";
     page: "/home";
+  };
+  "routes/auth/signin.tsx": {
+    id: "routes/auth/signin";
+    page: "/auth/signin";
+  };
+  "routes/auth/signup.tsx": {
+    id: "routes/auth/signup";
+    page: "/auth/signup";
+  };
+  "routes/auth/verify.tsx": {
+    id: "routes/auth/verify";
+    page: "/auth/verify";
+  };
+  "routes/dashboard.tsx": {
+    id: "routes/dashboard";
+    page: "/dashboard";
+  };
+  "routes/domains.tsx": {
+    id: "routes/domains";
+    page: "/domains";
+  };
+  "routes/domains/register.tsx": {
+    id: "routes/domains/register";
+    page: "/domains/register";
+  };
+  "routes/settings.tsx": {
+    id: "routes/settings";
+    page: "/settings";
+  };
+  "routes/settings/account.tsx": {
+    id: "routes/settings/account";
+    page: "/settings/account";
+  };
+  "routes/settings/contact.tsx": {
+    id: "routes/settings/contact";
+    page: "/settings/contact";
+  };
+  "routes/settings/api-keys.tsx": {
+    id: "routes/settings/api-keys";
+    page: "/settings/api-keys";
   };
 };
 
@@ -43,4 +113,14 @@ type RouteModules = {
   "routes/_index": typeof import("./app/routes/_index.tsx");
   "routes/mainLayout": typeof import("./app/routes/mainLayout.tsx");
   "routes/home": typeof import("./app/routes/home.tsx");
+  "routes/auth/signin": typeof import("./app/routes/auth/signin.tsx");
+  "routes/auth/signup": typeof import("./app/routes/auth/signup.tsx");
+  "routes/auth/verify": typeof import("./app/routes/auth/verify.tsx");
+  "routes/dashboard": typeof import("./app/routes/dashboard.tsx");
+  "routes/domains": typeof import("./app/routes/domains.tsx");
+  "routes/domains/register": typeof import("./app/routes/domains/register.tsx");
+  "routes/settings": typeof import("./app/routes/settings.tsx");
+  "routes/settings/account": typeof import("./app/routes/settings/account.tsx");
+  "routes/settings/contact": typeof import("./app/routes/settings/contact.tsx");
+  "routes/settings/api-keys": typeof import("./app/routes/settings/api-keys.tsx");
 };

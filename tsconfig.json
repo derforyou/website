@@ -32,16 +32,16 @@
       ".",
       "./.react-router/types"
     ],
-    "baseUrl": "",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "*"
+        "./app/*"
       ],
       "#/*": [
-        "app/*"
+        "./app/*"
       ],
       "$/*": [
-        "server/*"
+        "./server/*"
       ],
     },
     // Vite takes care of building everything, not tsc.

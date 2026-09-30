@@ -1,6 +1,13 @@
+import { Toaster } from "@/components/ui/sonner";
 import { useEffect } from "react";
-import { Links, LinksFunction, Meta, MetaFunction, Outlet, Scripts, ScrollRestoration } from "react-router";
-import type { Route } from "../app/+types/root";
+import {
+  Links,
+  type LinksFunction,
+  Meta,
+  type MetaFunction,
+  Outlet,
+  Scripts,
+} from "react-router";
 import Footer from "./components/base/Footer";
 import tailwind from "./tailwind.css?url";
 import { initializeTheme } from "./utils/theme";
@@ -28,14 +35,9 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => [
   {
-    title: "RR & CF Pages Template",
+    title: "DER Free Domain Platform",
   },
 ];
-
-export const loader = ({ context }: Route.LoaderArgs) => {
-  console.log(context.cloudflare);
-  return null;
-};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -47,9 +49,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="bg-bg">
+        <Toaster richColors position="top-right" />
         <div className="overflow-hidden">{children}</div>
         <Footer />
-        <ScrollRestoration />
         <Scripts />
       </body>
     </html>
