@@ -1,0 +1,12 @@
+{
+  "names": [
+    "auth",
+    "login",
+    "signin",
+    "signup",
+    "verify",
+    "sso",
+    "admin",
+    "moderation"
+  ]
+}
