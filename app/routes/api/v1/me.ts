@@ -1,8 +1,8 @@
 import type { RuntimeEnv } from "../../../../server/lib/env";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { authenticateBearer, createApiDatabase, jsonResponse, problem, unauthorizedBearer } from "../../../../server/services/api-auth";
-import type { Route } from "./+types/me";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context }: ApiRouteArgs) {
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");

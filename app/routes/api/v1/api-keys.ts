@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
 import type { RuntimeEnv } from "../../../../server/lib/env";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { authenticateSession, createApiDatabase, createToken, hashToken, isRecord, jsonBody, jsonResponse, keyView, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
-import type { Route } from "./+types/api-keys";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context }: ApiRouteArgs) {
   if (request.method !== "GET") return methodNotAllowed("GET, POST");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);
@@ -16,7 +16,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return jsonResponse({ data: keys.map(keyView) });
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({ request, context }: ApiRouteArgs) {
   if (request.method !== "POST") return methodNotAllowed("GET, POST");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);

@@ -1,10 +1,10 @@
 import { and, eq, isNull } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
 import type { RuntimeEnv } from "../../../../server/lib/env";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { authenticateSession, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
-import type { Route } from "./+types/api-keys.$keyId";
 
-export async function action({ request, context, params }: Route.ActionArgs) {
+export async function action({ request, context, params }: ApiRouteArgs) {
   if (request.method !== "DELETE") return methodNotAllowed("DELETE");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);

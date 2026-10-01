@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
 import type { RuntimeEnv } from "../../../../server/lib/env";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { authenticateBearer, createApiDatabase, isRecord, jsonBody, jsonResponse, methodNotAllowed, problem, unauthorizedBearer } from "../../../../server/services/api-auth";
-import type { Route } from "./+types/settings.contact";
 
 const contactFields = {
   fullName: schema.contact.fullName,
@@ -17,7 +17,7 @@ const contactFields = {
   countryCode: schema.contact.countryCode,
 };
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context }: ApiRouteArgs) {
   if (request.method !== "GET") return methodNotAllowed("GET, PUT");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);
@@ -32,7 +32,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return jsonResponse({ data: contact ?? null });
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({ request, context }: ApiRouteArgs) {
   if (request.method !== "PUT") return methodNotAllowed("GET, PUT");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);

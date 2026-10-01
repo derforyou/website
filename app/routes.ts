@@ -29,11 +29,4 @@ export default [
     route("/auth/signup", "routes/auth/signup.tsx"),
     route("/auth/verify", "routes/auth/verify.tsx"),
   ]),
-  route("/api/v1/me", "routes/api/v1/me.ts"),
-  route("/api/v1/settings/contact", "routes/api/v1/settings.contact.ts"),
-  route("/api/v1/domains", "routes/api/v1/domains.ts"),
-  route("/api/v1/domains/availability", "routes/api/v1/domains.availability.ts"),
-  route("/api/v1/domains/moderation", "routes/api/v1/domains.moderation.ts"),
-  route("/api/v1/api-keys", "routes/api/v1/api-keys.ts"),
-  route("/api/v1/api-keys/:keyId", "routes/api/v1/api-keys.$keyId.ts"),
 ] satisfies RouteConfig;

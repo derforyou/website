@@ -2,10 +2,10 @@ import { and, eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
 import { getReservedNames, normalizeSubdomain, validateSubdomainRequest, ZONE_NAME } from "../../../../server/lib/domain-policy";
 import type { RuntimeEnv } from "../../../../server/lib/env";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { createApiDatabase, jsonResponse, methodNotAllowed, problem } from "../../../../server/services/api-auth";
-import type { Route } from "./+types/domains.availability";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context }: ApiRouteArgs) {
   if (request.method !== "GET") return methodNotAllowed("GET");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);

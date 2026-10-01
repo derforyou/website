@@ -2,8 +2,8 @@ import { and, eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
 import { getReservedNames, normalizeSubdomain, validateSubdomainRequest } from "../../../../server/lib/domain-policy";
 import type { RuntimeEnv } from "../../../../server/lib/env";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { authenticateSession, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
-import type { Route } from "./+types/domains";
 
 function parseNameservers(value: string | null | undefined) {
   if (!value) return [];
@@ -16,7 +16,7 @@ function parseNameservers(value: string | null | undefined) {
     .filter((entry) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i.test(entry));
 }
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context }: ApiRouteArgs) {
   if (request.method !== "GET") return methodNotAllowed("GET");
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);
@@ -55,7 +55,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return jsonResponse({ data: { domains, registrations } });
 }
 
-export async function action({ request, context }: Route.ActionArgs) {
+export async function action({ request, context }: ApiRouteArgs) {
   if (request.method !== "POST") return methodNotAllowed("POST");
 
   const env = context.cloudflare.env as RuntimeEnv;
