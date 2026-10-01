@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d7a5f39a-c1e9-4357-9b6c-5dad299c1640",
+  "id": "a8461857-6c5a-4892-8b6d-c0b82dd0517d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -325,6 +325,44 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "authOtpThrottle": {
+      "name": "authOtpThrottle",
+      "columns": {
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sentCount": {
+          "name": "sentCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lastSentAt": {
+          "name": "lastSentAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nextAllowedAt": {
+          "name": "nextAllowedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "contact": {
       "name": "contact",
       "columns": {
@@ -611,6 +649,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "registrationId": {
+          "name": "registrationId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -618,6 +663,21 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'active'"
+        },
+        "dnsMode": {
+          "name": "dnsMode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'managed'"
+        },
+        "customNameservers": {
+          "name": "customNameservers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "dnsSyncStatus": {
           "name": "dnsSyncStatus",
@@ -663,6 +723,13 @@
             "ownerId"
           ],
           "isUnique": false
+        },
+        "domain_registration_id_idx": {
+          "name": "domain_registration_id_idx",
+          "columns": [
+            "registrationId"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -691,6 +758,19 @@
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"
+        },
+        "domain_registrationId_domainRegistration_id_fk": {
+          "name": "domain_registrationId_domainRegistration_id_fk",
+          "tableFrom": "domain",
+          "tableTo": "domainRegistration",
+          "columnsFrom": [
+            "registrationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -699,6 +779,163 @@
         "domain_subdomain_lowercase": {
           "name": "domain_subdomain_lowercase",
           "value": "\"domain\".\"subdomain\" = lower(\"domain\".\"subdomain\")"
+        }
+      }
+    },
+    "domainRegistration": {
+      "name": "domainRegistration",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subdomain": {
+          "name": "subdomain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hostname": {
+          "name": "hostname",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
+        },
+        "dnsMode": {
+          "name": "dnsMode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'managed'"
+        },
+        "customNameservers": {
+          "name": "customNameservers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rejectedReason": {
+          "name": "rejectedReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "decidedByUserId": {
+          "name": "decidedByUserId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "decisionAt": {
+          "name": "decisionAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "domain_registration_user_id_idx": {
+          "name": "domain_registration_user_id_idx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        },
+        "domain_registration_status_idx": {
+          "name": "domain_registration_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "domain_registration_hostname_idx": {
+          "name": "domain_registration_hostname_idx",
+          "columns": [
+            "hostname"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "domainRegistration_userId_user_id_fk": {
+          "name": "domainRegistration_userId_user_id_fk",
+          "tableFrom": "domainRegistration",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "domainRegistration_decidedByUserId_user_id_fk": {
+          "name": "domainRegistration_decidedByUserId_user_id_fk",
+          "tableFrom": "domainRegistration",
+          "tableTo": "user",
+          "columnsFrom": [
+            "decidedByUserId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "domain_registration_subdomain_lowercase": {
+          "name": "domain_registration_subdomain_lowercase",
+          "value": "\"domainRegistration\".\"subdomain\" = lower(\"domainRegistration\".\"subdomain\")"
         }
       }
     },

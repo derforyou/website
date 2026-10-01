@@ -45,6 +45,13 @@ CREATE TABLE `auditLog` (
 CREATE INDEX `audit_log_actor_id_idx` ON `auditLog` (`actorId`);--> statement-breakpoint
 CREATE INDEX `audit_log_resource_idx` ON `auditLog` (`resourceType`,`resourceId`);--> statement-breakpoint
 CREATE INDEX `audit_log_created_at_idx` ON `auditLog` (`createdAt`);--> statement-breakpoint
+CREATE TABLE `authOtpThrottle` (
+	`email` text PRIMARY KEY NOT NULL,
+	`sentCount` integer NOT NULL,
+	`lastSentAt` integer NOT NULL,
+	`nextAllowedAt` integer NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `contact` (
 	`id` text PRIMARY KEY NOT NULL,
 	`userId` text NOT NULL,
@@ -87,18 +94,45 @@ CREATE TABLE `domain` (
 	`hostname` text NOT NULL,
 	`ownerId` text NOT NULL,
 	`contactId` text NOT NULL,
+	`registrationId` text,
 	`status` text DEFAULT 'active' NOT NULL,
+	`dnsMode` text DEFAULT 'managed' NOT NULL,
+	`customNameservers` text,
 	`dnsSyncStatus` text DEFAULT 'not-configured' NOT NULL,
 	`createdAt` integer NOT NULL,
 	`updatedAt` integer NOT NULL,
 	FOREIGN KEY (`ownerId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE restrict,
 	FOREIGN KEY (`contactId`) REFERENCES `contact`(`id`) ON UPDATE no action ON DELETE restrict,
+	FOREIGN KEY (`registrationId`) REFERENCES `domainRegistration`(`id`) ON UPDATE no action ON DELETE set null,
 	CONSTRAINT "domain_subdomain_lowercase" CHECK("domain"."subdomain" = lower("domain"."subdomain"))
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `domain_subdomain_unique` ON `domain` (`subdomain`);--> statement-breakpoint
 CREATE UNIQUE INDEX `domain_hostname_unique` ON `domain` (`hostname`);--> statement-breakpoint
 CREATE INDEX `domain_owner_id_idx` ON `domain` (`ownerId`);--> statement-breakpoint
+CREATE INDEX `domain_registration_id_idx` ON `domain` (`registrationId`);--> statement-breakpoint
+CREATE TABLE `domainRegistration` (
+	`id` text PRIMARY KEY NOT NULL,
+	`userId` text NOT NULL,
+	`subdomain` text NOT NULL,
+	`hostname` text NOT NULL,
+	`status` text DEFAULT 'pending' NOT NULL,
+	`dnsMode` text DEFAULT 'managed' NOT NULL,
+	`customNameservers` text,
+	`notes` text,
+	`rejectedReason` text,
+	`decidedByUserId` text,
+	`decisionAt` integer,
+	`createdAt` integer NOT NULL,
+	`updatedAt` integer NOT NULL,
+	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`decidedByUserId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE set null,
+	CONSTRAINT "domain_registration_subdomain_lowercase" CHECK("domainRegistration"."subdomain" = lower("domainRegistration"."subdomain"))
+);
+--> statement-breakpoint
+CREATE INDEX `domain_registration_user_id_idx` ON `domainRegistration` (`userId`);--> statement-breakpoint
+CREATE INDEX `domain_registration_status_idx` ON `domainRegistration` (`status`);--> statement-breakpoint
+CREATE INDEX `domain_registration_hostname_idx` ON `domainRegistration` (`hostname`);--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expiresAt` integer NOT NULL,
