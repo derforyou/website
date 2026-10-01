@@ -35,7 +35,7 @@ Sediakan variabel berikut di environment aplikasi:
 
 > **Penting:** Simpan `GITHUB_CLIENT_SECRET` dan `BETTER_AUTH_SECRET` sebagai secrets di Cloudflare Pages/Workers. Jangan commit nilainya ke repositori atau menaruhnya di file yang dipublikasikan.
 
-Di Cloudflare, atur environment variables dan secrets pada project Pages yang menjalankan aplikasi. Pastikan `APP_URL` memakai origin yang sama dengan domain publik dan **Homepage URL** GitHub OAuth App.
+Karena Wrangler configuration menjadi sumber kebenaran project Pages, deklarasikan `APP_URL`, `ADMIN_EMAIL`, dan `GITHUB_CLIENT_ID` sebagai plaintext vars di `wrangler.jsonc`. Simpan `GITHUB_CLIENT_SECRET` dan `BETTER_AUTH_SECRET` sebagai secrets di Cloudflare Pages settings. Pastikan `APP_URL` memakai origin yang sama dengan domain publik dan **Homepage URL** GitHub OAuth App.
 
 Untuk development lokal, gunakan `.dev.vars` yang tidak dilacak Git, atau mekanisme lokal setara:
 

@@ -1,13 +1,17 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    // Configure local Pages development.
-    // Configure production bindings and secrets in Cloudflare Pages settings.
+    // This file is the source of truth for Pages bindings and plaintext vars.
+    // Configure production secrets in Cloudflare Pages settings.
     "name": "derforyou",
     "compatibility_date": "2026-10-01",
     "compatibility_flags": [
         "nodejs_compat"
     ],
     "pages_build_output_dir": "./build/client",
+    "vars": {
+        "APP_URL": "https://der.my.id",
+        "ADMIN_EMAIL": "hostmaster@der.my.id,dd@dyzulk.com,dev@dyzulk.com"
+    },
     "d1_databases": [
         {
             "binding": "D1_DATABASE",

@@ -9,7 +9,7 @@ export type RuntimeEnv = {
   CLOUDFLARE_ZONE_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
   ADMIN_EMAIL?: string;
-  // D1_DATABASE is a Cloudflare binding declared in wrangler.toml.
+  // D1_DATABASE is a Cloudflare binding declared in wrangler.jsonc.
   // It must not be duplicated in local .env files because that creates a binding name conflict during deploy.
   D1_DATABASE?: D1Database;
 };
