@@ -38,16 +38,23 @@ export function getCloudflareClient(env: CloudflareRuntime) {
 export async function listDnsRecords(env: CloudflareRuntime, zoneName: string) {
   const client = getCloudflareClient(env);
   if (!client) {
-    return [];
+    return [] as Array<{ name?: string | null }>;
   }
 
   const zone = await client.zones.list({ name: zoneName });
   const zoneId = zone.result[0]?.id ?? env.CLOUDFLARE_ZONE_ID;
   if (!zoneId) {
-    return [];
+    return [] as Array<{ name?: string | null }>;
   }
 
-  return client.dns.records.list({ zone_id: zoneId });
+  const records = await client.dns.records.list({ zone_id: zoneId });
+  if (Array.isArray(records)) {
+    return records as Array<{ name?: string | null }>;
+  }
+
+  return Array.isArray((records as { result?: unknown[] })?.result)
+    ? ((records as { result?: Array<{ name?: string | null }> }).result ?? [])
+    : [] as Array<{ name?: string | null }>;
 }
 
 export async function createDnsRecord(

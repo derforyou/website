@@ -14,20 +14,19 @@
       "ES2022"
     ],
     "types": [
-      "vite/client",
-      "@cloudflare/workers-types"
+      "node",
+      "vite/client"
     ],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "target": "ES2022",
     "strict": true,
-    "allowJs": true,
     "skipLibCheck": true,
-    "ignoreDeprecations": "6.0",
+    "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
     "rootDirs": [
       ".",
@@ -43,9 +42,8 @@
       ],
       "$/*": [
         "./server/*"
-      ],
+      ]
     },
-    // Vite takes care of building everything, not tsc.
     "noEmit": true
   }
 }

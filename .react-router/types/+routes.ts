@@ -38,6 +38,9 @@ type Pages = {
   "/dashboard/domains/register": {
     params: {};
   };
+  "/dashboard/domains/moderation": {
+    params: {};
+  };
   "/dashboard/settings": {
     params: {};
   };
@@ -49,26 +52,6 @@ type Pages = {
   };
   "/dashboard/settings/api-keys": {
     params: {};
-  };
-  "/api/v1/me": {
-    params: {};
-  };
-  "/api/v1/domains/availability": {
-    params: {};
-  };
-  "/api/v1/domains": {
-    params: {};
-  };
-  "/api/v1/settings/contact": {
-    params: {};
-  };
-  "/api/v1/api-keys": {
-    params: {};
-  };
-  "/api/v1/api-keys/:keyId": {
-    params: {
-      "keyId": string;
-    };
   };
   "/auth/signin": {
     params: {};
@@ -84,7 +67,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/api/v1/me" | "/api/v1/domains/availability" | "/api/v1/domains" | "/api/v1/settings/contact" | "/api/v1/api-keys" | "/api/v1/api-keys/:keyId" | "/auth/signin" | "/auth/signup" | "/auth/verify";
+    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/auth/signin" | "/auth/signup" | "/auth/verify";
   };
   "routes/publicLayout.tsx": {
     id: "routes/publicLayout";
@@ -116,7 +99,7 @@ type RouteFiles = {
   };
   "routes/dashboard/layout.tsx": {
     id: "routes/dashboard/layout";
-    page: "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys";
+    page: "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -129,6 +112,10 @@ type RouteFiles = {
   "routes/dashboard/domains/register.tsx": {
     id: "routes/dashboard/domains/register";
     page: "/dashboard/domains/register";
+  };
+  "routes/dashboard/domains/moderation.tsx": {
+    id: "routes/dashboard/domains/moderation";
+    page: "/dashboard/domains/moderation";
   };
   "routes/dashboard/settings/index.tsx": {
     id: "routes/dashboard/settings/index";
@@ -145,30 +132,6 @@ type RouteFiles = {
   "routes/dashboard/settings/api-keys.tsx": {
     id: "routes/dashboard/settings/api-keys";
     page: "/dashboard/settings/api-keys";
-  };
-  "routes/api/v1/me.ts": {
-    id: "routes/api/v1/me";
-    page: "/api/v1/me";
-  };
-  "routes/api/v1/domains.availability.ts": {
-    id: "routes/api/v1/domains.availability";
-    page: "/api/v1/domains/availability";
-  };
-  "routes/api/v1/domains.ts": {
-    id: "routes/api/v1/domains";
-    page: "/api/v1/domains";
-  };
-  "routes/api/v1/settings.contact.ts": {
-    id: "routes/api/v1/settings.contact";
-    page: "/api/v1/settings/contact";
-  };
-  "routes/api/v1/api-keys.ts": {
-    id: "routes/api/v1/api-keys";
-    page: "/api/v1/api-keys";
-  };
-  "routes/api/v1/api-keys.$keyId.ts": {
-    id: "routes/api/v1/api-keys.$keyId";
-    page: "/api/v1/api-keys/:keyId";
   };
   "routes/authLayout.tsx": {
     id: "routes/authLayout";
@@ -201,16 +164,11 @@ type RouteModules = {
   "routes/dashboard/index": typeof import("./app/routes/dashboard/index.tsx");
   "routes/dashboard/domains/index": typeof import("./app/routes/dashboard/domains/index.tsx");
   "routes/dashboard/domains/register": typeof import("./app/routes/dashboard/domains/register.tsx");
+  "routes/dashboard/domains/moderation": typeof import("./app/routes/dashboard/domains/moderation.tsx");
   "routes/dashboard/settings/index": typeof import("./app/routes/dashboard/settings/index.tsx");
   "routes/dashboard/settings/account": typeof import("./app/routes/dashboard/settings/account.tsx");
   "routes/dashboard/settings/contact": typeof import("./app/routes/dashboard/settings/contact.tsx");
   "routes/dashboard/settings/api-keys": typeof import("./app/routes/dashboard/settings/api-keys.tsx");
-  "routes/api/v1/me": typeof import("./app/routes/api/v1/me.ts");
-  "routes/api/v1/domains.availability": typeof import("./app/routes/api/v1/domains.availability.ts");
-  "routes/api/v1/domains": typeof import("./app/routes/api/v1/domains.ts");
-  "routes/api/v1/settings.contact": typeof import("./app/routes/api/v1/settings.contact.ts");
-  "routes/api/v1/api-keys": typeof import("./app/routes/api/v1/api-keys.ts");
-  "routes/api/v1/api-keys.$keyId": typeof import("./app/routes/api/v1/api-keys.$keyId.ts");
   "routes/authLayout": typeof import("./app/routes/authLayout.tsx");
   "routes/auth/signin": typeof import("./app/routes/auth/signin.tsx");
   "routes/auth/signup": typeof import("./app/routes/auth/signup.tsx");
