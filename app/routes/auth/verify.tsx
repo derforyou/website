@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import {
     InputOTP,
     InputOTPGroup,
+    InputOTPSeparator,
     InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
@@ -134,14 +135,17 @@ export default function VerifyPage() {
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="otp">Verification code</FieldLabel>
-                                <InputOTP id="otp" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={otp} onChange={setOtp} autoComplete="one-time-code" aria-label="6-digit verification code" disabled={pending}>
-                                    <InputOTPGroup>
-                                        <InputOTPSlot index={0} />
-                                        <InputOTPSlot index={1} />
-                                        <InputOTPSlot index={2} />
-                                        <InputOTPSlot index={3} />
-                                        <InputOTPSlot index={4} />
-                                        <InputOTPSlot index={5} />
+                                <InputOTP id="otp" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={otp} onChange={setOtp} autoComplete="one-time-code" aria-label="6-digit verification code" disabled={pending} containerClassName="w-full justify-between">
+                                    <InputOTPGroup className="min-w-0 flex-1 justify-between">
+                                        <InputOTPSlot index={0} className="size-9" />
+                                        <InputOTPSlot index={1} className="size-9" />
+                                        <InputOTPSlot index={2} className="size-9" />
+                                    </InputOTPGroup>
+                                    <InputOTPSeparator />
+                                    <InputOTPGroup className="min-w-0 flex-1 justify-between">
+                                        <InputOTPSlot index={3} className="size-9" />
+                                        <InputOTPSlot index={4} className="size-9" />
+                                        <InputOTPSlot index={5} className="size-9" />
                                     </InputOTPGroup>
                                 </InputOTP>
                                 <FieldDescription>Codes expire five minutes after they are issued.</FieldDescription>
