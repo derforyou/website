@@ -8,7 +8,7 @@
     "dev:ui": "react-router dev",
     "dev:wrangler": "wrangler pages dev --local",
     "generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply --local db",
+    "db:migrate:local": "wrangler d1 migrations apply der --local",
     "db:migrate:prod": "tsx scripts/migrate.ts",
     "db:migrate:force": "tsx scripts/migrate-force.ts",
     "db:fc": "npm run generate && npm run db:migrate:local && npm run db:migrate:prod",

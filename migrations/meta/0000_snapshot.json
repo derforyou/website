@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a8461857-6c5a-4892-8b6d-c0b82dd0517d",
+  "id": "85432eb4-9832-450e-aafa-eb8a7837e5d2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -488,117 +488,6 @@
           "tableTo": "user",
           "columnsFrom": [
             "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "dnsRecord": {
-      "name": "dnsRecord",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "domainId": {
-          "name": "domainId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "cloudflareRecordId": {
-          "name": "cloudflareRecordId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "ttl": {
-          "name": "ttl",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 1
-        },
-        "proxied": {
-          "name": "proxied",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "dnsRecord_cloudflareRecordId_unique": {
-          "name": "dnsRecord_cloudflareRecordId_unique",
-          "columns": [
-            "cloudflareRecordId"
-          ],
-          "isUnique": true
-        },
-        "dns_record_domain_id_idx": {
-          "name": "dns_record_domain_id_idx",
-          "columns": [
-            "domainId"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "dnsRecord_domainId_domain_id_fk": {
-          "name": "dnsRecord_domainId_domain_id_fk",
-          "tableFrom": "dnsRecord",
-          "tableTo": "domain",
-          "columnsFrom": [
-            "domainId"
           ],
           "columnsTo": [
             "id"

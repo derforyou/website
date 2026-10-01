@@ -72,22 +72,6 @@ CREATE TABLE `contact` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX `contact_userId_unique` ON `contact` (`userId`);--> statement-breakpoint
 CREATE INDEX `contact_email_idx` ON `contact` (`email`);--> statement-breakpoint
-CREATE TABLE `dnsRecord` (
-	`id` text PRIMARY KEY NOT NULL,
-	`domainId` text NOT NULL,
-	`cloudflareRecordId` text,
-	`type` text NOT NULL,
-	`name` text NOT NULL,
-	`content` text NOT NULL,
-	`ttl` integer DEFAULT 1 NOT NULL,
-	`proxied` integer DEFAULT false NOT NULL,
-	`createdAt` integer NOT NULL,
-	`updatedAt` integer NOT NULL,
-	FOREIGN KEY (`domainId`) REFERENCES `domain`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `dnsRecord_cloudflareRecordId_unique` ON `dnsRecord` (`cloudflareRecordId`);--> statement-breakpoint
-CREATE INDEX `dns_record_domain_id_idx` ON `dnsRecord` (`domainId`);--> statement-breakpoint
 CREATE TABLE `domain` (
 	`id` text PRIMARY KEY NOT NULL,
 	`subdomain` text NOT NULL,
