@@ -1,10 +1,12 @@
 const EMAIL_KEY = "der:auth-email";
 const SENT_COUNT_KEY = "der:auth-otp-sent-count";
+const SENT_AT_KEY = "der:auth-otp-sent-at";
 const RESEND_AT_KEY = "der:auth-otp-resend-at";
 const SIGNUP_NAME_KEY = "der:auth-signup-name";
 
 const INITIAL_COOLDOWN_MS = 30_000;
 const MAX_COOLDOWN_MS = 15 * 60_000;
+const COOLDOWN_RESET_MS = 24 * 60 * 60_000;
 
 function getSessionStorage() {
   return typeof window === "undefined" ? null : window.sessionStorage;
@@ -18,9 +20,17 @@ export function rememberOtpRequest(email: string) {
   const storage = getSessionStorage();
   if (!storage) return 0;
 
-  const resendAt = Date.now() + INITIAL_COOLDOWN_MS;
+  const now = Date.now();
+  const current = readOtpSession();
+  const sameEmail = current?.email.toLowerCase() === email.trim().toLowerCase();
+  const sentCount =
+    sameEmail && now - current.sentAt < COOLDOWN_RESET_MS
+      ? current.sentCount + 1
+      : 1;
+  const resendAt = now + cooldownForSendCount(sentCount);
   storage.setItem(EMAIL_KEY, email.trim());
-  storage.setItem(SENT_COUNT_KEY, "1");
+  storage.setItem(SENT_COUNT_KEY, String(sentCount));
+  storage.setItem(SENT_AT_KEY, String(now));
   storage.setItem(RESEND_AT_KEY, String(resendAt));
   return resendAt;
 }
@@ -33,6 +43,7 @@ export function readOtpSession() {
   return {
     email,
     sentCount: Math.max(1, Number(storage.getItem(SENT_COUNT_KEY)) || 1),
+    sentAt: Number(storage.getItem(SENT_AT_KEY)) || 0,
     resendAt: Number(storage.getItem(RESEND_AT_KEY)) || 0,
   };
 }
@@ -46,9 +57,11 @@ export function rememberOtpResend(email: string) {
     return rememberOtpRequest(email);
   }
 
-  const sentCount = current.sentCount + 1;
-  const resendAt = Date.now() + cooldownForSendCount(sentCount);
+  const now = Date.now();
+  const sentCount = now - current.sentAt < COOLDOWN_RESET_MS ? current.sentCount + 1 : 1;
+  const resendAt = now + cooldownForSendCount(sentCount);
   storage.setItem(SENT_COUNT_KEY, String(sentCount));
+  storage.setItem(SENT_AT_KEY, String(now));
   storage.setItem(RESEND_AT_KEY, String(resendAt));
   return resendAt;
 }
@@ -66,6 +79,7 @@ export function clearOtpSession() {
   const storage = getSessionStorage();
   storage?.removeItem(EMAIL_KEY);
   storage?.removeItem(SENT_COUNT_KEY);
+  storage?.removeItem(SENT_AT_KEY);
   storage?.removeItem(RESEND_AT_KEY);
   storage?.removeItem(SIGNUP_NAME_KEY);
 }

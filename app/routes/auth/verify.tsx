@@ -50,7 +50,11 @@ export default function VerifyPage() {
     useEffect(() => {
         if (!resendAt) return;
 
-        const timer = window.setInterval(() => setNow(Date.now()), 1000);
+        const timer = window.setInterval(() => {
+            const currentTime = Date.now();
+            setNow(currentTime);
+            if (currentTime >= resendAt) window.clearInterval(timer);
+        }, 1000);
         return () => window.clearInterval(timer);
     }, [resendAt]);
 
@@ -119,6 +123,14 @@ export default function VerifyPage() {
                             <Field>
                                 <FieldLabel htmlFor="email">Email address</FieldLabel>
                                 <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" value={email} onChange={(event) => setEmail(event.target.value)} readOnly={emailRestored} required />
+                                {emailRestored && (
+                                    <FieldDescription>
+                                        Wrong email?{" "}
+                                        <Link to={isSignUp ? "/auth/signup" : "/auth/signin"} onClick={clearOtpSession} className="font-medium text-primary hover:underline">
+                                            Use a different email
+                                        </Link>
+                                    </FieldDescription>
+                                )}
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="otp">Verification code</FieldLabel>
