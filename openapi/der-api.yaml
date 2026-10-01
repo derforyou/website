@@ -456,10 +456,11 @@ paths:
   /api/v1/api-keys:
     get:
       operationId: listApiKeys
-      summary: List API keys for the signed-in browser user
+      summary: List API keys for the authenticated user
       description: The secret token is never returned by this operation.
       tags: [API keys]
       security:
+        - bearerAuth: []
         - betterAuthSession: []
       responses:
         '200':
@@ -472,10 +473,11 @@ paths:
           $ref: '#/components/responses/Problem'
     post:
       operationId: createApiKey
-      summary: Create a Bearer API key for the signed-in browser user
+      summary: Create a Bearer API key for the authenticated user
       description: The plaintext token is returned once and cannot be retrieved later.
       tags: [API keys]
       security:
+        - bearerAuth: []
         - betterAuthSession: []
       requestBody:
         required: true
@@ -495,9 +497,10 @@ paths:
   /api/v1/api-keys/{keyId}:
     delete:
       operationId: revokeApiKey
-      summary: Revoke an API key owned by the signed-in browser user
+      summary: Revoke an API key owned by the authenticated user
       tags: [API keys]
       security:
+        - bearerAuth: []
         - betterAuthSession: []
       parameters:
         - name: keyId
