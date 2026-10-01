@@ -24,15 +24,23 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
 import {
   ContactRound,
   Globe2,
   KeyRound,
   LayoutDashboard,
+  LogOut,
   Plus,
   Settings2,
 } from "lucide-react";
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, redirect, useLocation, useNavigate } from "react-router";
+
+export async function clientLoader() {
+  const session = await authClient.getSession();
+  if (!session.data) throw redirect("/auth/signin");
+  return { user: session.data.user };
+}
 
 const primaryNavigation = [
   { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
@@ -145,6 +153,7 @@ function AppSidebar() {
 
 export default function MainLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const pageTitle = pageTitles[pathname] ?? "Workspace";
   const sectionTitle = pathname.startsWith("/dashboard/settings")
     ? "Developer"
@@ -180,15 +189,30 @@ export default function MainLayout() {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          {pathname !== "/dashboard/domains/register" && (
-            <Button asChild size="sm" className="shrink-0">
-              <Link to="/dashboard/domains/register">
-                <Plus data-icon="inline-start" />
-                <span className="hidden sm:inline">Register domain</span>
-                <span className="sm:hidden">Register</span>
-              </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            {pathname !== "/dashboard/domains/register" && (
+              <Button asChild size="sm">
+                <Link to="/dashboard/domains/register">
+                  <Plus data-icon="inline-start" />
+                  <span className="hidden sm:inline">Register domain</span>
+                  <span className="sm:hidden">Register</span>
+                </Link>
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Sign out"
+              title="Sign out"
+              onClick={async () => {
+                await authClient.signOut();
+                navigate("/auth/signin");
+              }}
+            >
+              <LogOut />
             </Button>
-          )}
+          </div>
         </header>
         <main className="flex flex-1 flex-col">
           <Outlet />

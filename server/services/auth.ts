@@ -9,7 +9,14 @@ import { sendVerificationEmail } from "./email";
 export type BetterAuthRuntimeEnv = RuntimeEnv;
 
 export function createAuth(env: BetterAuthRuntimeEnv) {
-  const database = drizzle(env.D1_DATABASE as D1Database, { schema });
+  if (!env.D1_DATABASE) {
+    throw new Error("Better Auth requires the D1_DATABASE binding.");
+  }
+  if (!env.BETTER_AUTH_SECRET || env.BETTER_AUTH_SECRET.length < 32) {
+    throw new Error("BETTER_AUTH_SECRET must contain at least 32 characters.");
+  }
+
+  const database = drizzle(env.D1_DATABASE, { schema });
   const socialProviders =
     env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
       ? {
@@ -24,7 +31,7 @@ export function createAuth(env: BetterAuthRuntimeEnv) {
   return betterAuth({
     database: drizzleAdapter(database, { provider: "sqlite" }),
     baseURL: env.APP_URL ?? "http://localhost:5173",
-    secret: env.BETTER_AUTH_SECRET ?? "development-secret-change-me",
+    secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.APP_URL ?? "http://localhost:5173"],
     socialProviders,
     plugins: [

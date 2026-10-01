@@ -8,11 +8,50 @@ import {
     FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GitBranch, LockKeyhole, Mail } from "lucide-react";
-import { Link } from "react-router";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router";
 
 export default function SignInPage() {
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [error, setError] = useState("");
+    const [pending, setPending] = useState(false);
+
+    async function requestCode(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setError("");
+        setPending(true);
+        try {
+            const result = await authClient.emailOtp.sendVerificationOtp({
+                email,
+                type: "sign-in",
+            });
+            if (result.error) {
+                setError(result.error.message ?? "Unable to send the verification code.");
+                return;
+            }
+            navigate("/auth/verify?flow=signin");
+        } catch {
+            setError("Unable to send the verification code. Please try again.");
+        } finally {
+            setPending(false);
+        }
+    }
+
+    async function signInWithGitHub() {
+        setError("");
+        const result = await authClient.signIn.social({
+            provider: "github",
+            callbackURL: "/dashboard",
+        });
+        if (result.error) {
+            setError(result.error.message ?? "GitHub sign-in is unavailable.");
+        }
+    }
+
     return (
         <div className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6 py-10">
             <Card className="w-full max-w-xl border-border bg-card/80">
@@ -21,20 +60,23 @@ export default function SignInPage() {
                     <p className="text-sm text-muted-foreground">Use a one-time email code or continue with GitHub.</p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <FieldGroup>
-                        <Field>
-                            <FieldLabel htmlFor="email">Email address</FieldLabel>
-                            <div className="relative">
-                                <Mail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
-                                <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" className="pl-9" />
-                            </div>
-                            <FieldDescription>We will send a one-time sign-in code.</FieldDescription>
-                        </Field>
-                    </FieldGroup>
+                    <form className="flex flex-col gap-5" onSubmit={requestCode}>
+                        <FieldGroup>
+                            <Field>
+                                <FieldLabel htmlFor="email">Email address</FieldLabel>
+                                <div className="relative">
+                                    <Mail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                                    <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" className="pl-9" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                                </div>
+                                <FieldDescription>We will send a one-time sign-in code.</FieldDescription>
+                            </Field>
+                        </FieldGroup>
 
-                    <Button className="w-full" type="button">
-                        Send verification code
-                    </Button>
+                        {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+                        <Button className="w-full" type="submit" disabled={pending}>
+                            {pending ? "Sending code..." : "Send verification code"}
+                        </Button>
+                    </form>
 
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -45,7 +87,7 @@ export default function SignInPage() {
                         </div>
                     </div>
 
-                    <Button className="w-full" variant="outline" type="button">
+                    <Button className="w-full" variant="outline" type="button" onClick={signInWithGitHub}>
                         <SiGithub className="mr-2 size-4" />
                         Continue with GitHub
                     </Button>

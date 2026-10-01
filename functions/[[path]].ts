@@ -15,6 +15,21 @@ export const onRequest: PagesFunction<RuntimeEnv> = ({ request, env, next }) => 
     return createAuth(env).handler(request);
   }
 
+  if (pathname === "/api/v1" || pathname.startsWith("/api/v1/")) {
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Authorization, Content-Type",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }
+    return next();
+  }
+
   if (pathname.startsWith("/api/")) {
     return Response.json({ error: "API route not found." }, { status: 404 });
   }

@@ -27,6 +27,7 @@
     "strict": true,
     "allowJs": true,
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "forceConsistentCasingInFileNames": true,
     "rootDirs": [
       ".",

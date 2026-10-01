@@ -7,10 +7,40 @@ import {
     FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { ArrowRight, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
-import { Link } from "react-router";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router";
 
 export default function SignUpPage() {
+    const navigate = useNavigate();
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [error, setError] = useState("");
+    const [pending, setPending] = useState(false);
+
+    async function requestCode(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setError("");
+        setPending(true);
+        try {
+            const result = await authClient.emailOtp.sendVerificationOtp({
+                email,
+                type: "sign-in",
+            });
+            if (result.error) {
+                setError(result.error.message ?? "Unable to send the verification code.");
+                return;
+            }
+            sessionStorage.setItem("der:auth-signup-name", name.trim());
+            navigate("/auth/verify?flow=signup");
+        } catch {
+            setError("Unable to send the verification code. Please try again.");
+        } finally {
+            setPending(false);
+        }
+    }
+
     return (
         <div className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6 py-10">
             <Card className="w-full max-w-xl border-border bg-card/80">
@@ -19,20 +49,28 @@ export default function SignUpPage() {
                     <p className="text-sm text-muted-foreground">Use one-time email verification and follow it with a secure sign-in flow.</p>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                    <FieldGroup>
-                        <Field>
-                            <FieldLabel htmlFor="fullName">Full name</FieldLabel>
-                            <Input id="fullName" autoComplete="name" placeholder="Your name" />
-                        </Field>
-                        <Field>
-                            <FieldLabel htmlFor="email">Email address</FieldLabel>
-                            <div className="relative">
-                                <Mail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
-                                <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" className="pl-9" />
-                            </div>
-                            <FieldDescription>A one-time code will be sent to this address.</FieldDescription>
-                        </Field>
-                    </FieldGroup>
+                    <form className="flex flex-col gap-5" onSubmit={requestCode}>
+                        <FieldGroup>
+                            <Field>
+                                <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+                                <Input id="fullName" autoComplete="name" placeholder="Your name" value={name} onChange={(event) => setName(event.target.value)} required />
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="email">Email address</FieldLabel>
+                                <div className="relative">
+                                    <Mail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                                    <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" className="pl-9" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                                </div>
+                                <FieldDescription>A one-time code will be sent to this address.</FieldDescription>
+                            </Field>
+                        </FieldGroup>
+
+                        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+                        <Button className="w-full gap-2" type="submit" disabled={pending}>
+                            {pending ? "Sending code..." : "Start email verification"}
+                            {!pending && <ArrowRight className="h-4 w-4" />}
+                        </Button>
+                    </form>
 
                     <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
@@ -40,11 +78,6 @@ export default function SignUpPage() {
                             The verification code is short-lived and single-use.
                         </div>
                     </div>
-
-                    <Button className="w-full gap-2" type="button">
-                        Start email verification
-                        <ArrowRight className="h-4 w-4" />
-                    </Button>
 
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CheckCircle2 className="h-4 w-4 text-primary" />
