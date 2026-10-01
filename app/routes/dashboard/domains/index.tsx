@@ -39,6 +39,8 @@ async function loadDomainData() {
 export default function DomainsPage() {
     const [domains, setDomains] = useState<DomainRecord[]>([]);
     const [registrations, setRegistrations] = useState<RegistrationRecord[]>([]);
+    const [canAccessModeration, setCanAccessModeration] = useState(false);
+
     useEffect(() => {
         void loadDomainData()
             .then(({ domains: nextDomains, registrations: nextRegistrations }) => {
@@ -47,6 +49,14 @@ export default function DomainsPage() {
             })
             .catch((loadError: unknown) => {
                 toast.error(loadError instanceof Error ? loadError.message : "Unable to load domain data.");
+            });
+
+        void fetch("/api/v1/domains/moderation", { method: "GET" })
+            .then((response) => {
+                setCanAccessModeration(response.ok);
+            })
+            .catch(() => {
+                setCanAccessModeration(false);
             });
     }, []);
 
@@ -66,12 +76,14 @@ export default function DomainsPage() {
                             Register domain
                         </Link>
                     </Button>
-                    <Button asChild variant="outline">
-                        <Link to="/dashboard/domains/moderation">
-                            <ShieldCheck data-icon="inline-start" />
-                            Moderation
-                        </Link>
-                    </Button>
+                    {canAccessModeration && (
+                        <Button asChild variant="outline">
+                            <Link to="/dashboard/domains/moderation">
+                                <ShieldCheck data-icon="inline-start" />
+                                Moderation
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </header>
 
