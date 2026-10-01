@@ -1,6 +1,12 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GitBranch, LockKeyhole, Mail } from "lucide-react";
@@ -15,13 +21,16 @@ export default function SignInPage() {
                     <p className="text-sm text-muted-foreground">Use a one-time email code or continue with GitHub.</p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium">Email</label>
-                        <div className="relative">
-                            <Mail className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input id="email" type="email" placeholder="you@der.my.id" className="pl-9" />
-                        </div>
-                    </div>
+                    <FieldGroup>
+                        <Field>
+                            <FieldLabel htmlFor="email">Email address</FieldLabel>
+                            <div className="relative">
+                                <Mail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                                <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" className="pl-9" />
+                            </div>
+                            <FieldDescription>We will send a one-time sign-in code.</FieldDescription>
+                        </Field>
+                    </FieldGroup>
 
                     <Button className="w-full" type="button">
                         Send verification code
@@ -37,7 +46,7 @@ export default function SignInPage() {
                     </div>
 
                     <Button className="w-full" variant="outline" type="button">
-                        <SiGithub className="mr-2 h-4 w-4" />
+                        <SiGithub className="mr-2 size-4" />
                         Continue with GitHub
                     </Button>
 

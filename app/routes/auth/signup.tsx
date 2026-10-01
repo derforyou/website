@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import { Link } from "react-router";
@@ -13,18 +19,20 @@ export default function SignUpPage() {
                     <p className="text-sm text-muted-foreground">Use one-time email verification and follow it with a secure sign-in flow.</p>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                    <div className="space-y-2">
-                        <label htmlFor="fullName" className="text-sm font-medium">Full name</label>
-                        <Input id="fullName" placeholder="Alex Morgan" />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium">Email</label>
-                        <div className="relative">
-                            <Mail className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input id="email" type="email" placeholder="alex@der.my.id" className="pl-9" />
-                        </div>
-                    </div>
+                    <FieldGroup>
+                        <Field>
+                            <FieldLabel htmlFor="fullName">Full name</FieldLabel>
+                            <Input id="fullName" autoComplete="name" placeholder="Your name" />
+                        </Field>
+                        <Field>
+                            <FieldLabel htmlFor="email">Email address</FieldLabel>
+                            <div className="relative">
+                                <Mail className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+                                <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" className="pl-9" />
+                            </div>
+                            <FieldDescription>A one-time code will be sent to this address.</FieldDescription>
+                        </Field>
+                    </FieldGroup>
 
                     <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
@@ -51,6 +59,9 @@ export default function SignUpPage() {
                             Verify code
                         </Link>
                     </div>
+                    <p className="text-xs leading-5 text-muted-foreground">
+                        By continuing, you agree to the <Link to="/legal/terms" className="underline underline-offset-4">Terms</Link> and acknowledge the <Link to="/legal/privacy" className="underline underline-offset-4">Privacy Policy</Link>.
+                    </p>
                 </CardContent>
             </Card>
         </div>

@@ -1,161 +1,51 @@
-# React Router & Cloudflare Pages Template 🚀
+# DERforyou
 
-Modern web application template built with React Router and Cloudflare Pages integration 🌐.  
-Built this because I wanted a template that would allow me to deploy my React Router app on Cloudflare Pages quickly and easily! 🚀 There was no public template available at the time, so I decided to make one. And here it is! 🎉
+DERforyou is a developer-domain service with a public landing page, account flows, domain workspace, and service policies. It is built with React Router, Cloudflare Pages, D1, Tailwind CSS v4, and shadcn/ui using the Radix base.
 
-## 🚀 Features
-
-- ⚡ Vite for lightning-fast development
-- 🎯 React Router for seamless navigation
-- ☁️ Cloudflare Pages integration
-- 🌐 Cloudflare D1 integration
-- 🎨 TailwindCSS for styling
-- 📦 TypeScript support
-- 🔄 Hot Module Replacement (HMR)
-- 🗄️ Drizzle & Kysely for database management
-- 🎬 Framer Motion for animations
-
-## 🗄️ About Cloudflare D1
-
-Cloudflare D1 is a serverless SQL database that runs on Cloudflare's global network. Key features include:
-
-- 📊 SQLite-compatible database built on libSQL
-- 🌐 Distributed across Cloudflare's global network
-- ⚡ Zero configuration required
-- 🔒 Automatic backups and high availability
-- 💰 Free tier with generous limits
-- 🚀 Low latency, as data is stored close to your users
-- 🔄 Seamless integration with Cloudflare Workers
-
-D1 is perfect for:
-- Web applications requiring global data access
-- Projects needing SQL without managing infrastructure
-- Applications with moderate data requirements (up to 100GB per database)
-
-## 📦 Installation
+## Development
 
 ```bash
-git clone https://github.com/Xazu001/react-router-cf.git
-cd react-router-cf
 npm install
-```
-
-## ⚙️ Configuration
-
-1. Create a D1 Database in Cloudflare:
-   - Go to Cloudflare Dashboard > Workers & Pages
-   - Click on "D1" in the sidebar
-   - Click "Create database"
-   - Note down the `database_name` and `database_id`
-
-2. Configure `wrangler.toml`:
-   ```toml
-   name = "your-project-name"
-   
-   [vars]
-   JWT_PRIVATE = """
-   Your private key for JWT
-   """
-   JWT_PUBLIC = """
-   Your public key for JWT
-   """
-
-   [[d1_databases]]
-   binding = "db"
-   database_name = "your_database_name"
-   database_id = "your_database_id"
-   ```
-
-3. Generate JWT Keys:
-   ```bash
-   # Using OpenSSL to generate keys
-   # Generate private key
-   openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048
-   
-   # Generate public key from private key
-   openssl rsa -pubout -in private_key.pem -out public_key.pem
-   ```
-   Copy the contents of these files into the respective JWT_PRIVATE and JWT_PUBLIC fields in `wrangler.toml`
-
-4. Environment Variables: 🔐
-```bash
-# Create a .env file in the root directory
-touch .env
-
-# Add the following environment variables
-CLOUDFLARE_ACCOUNT_ID="your_account_id"
-CLOUDFLARE_DATABASE_ID="your_database_id"
-CLOUDFLARE_D1_TOKEN="your_d1_token"
-```
-
-5. Development: 🛠️
-```bash
-# Install dependencies
-npm install
-
-# Start the development server
+cp .env.example .env
 npm run dev
-
-# Your app will be available at http://localhost:5173
 ```
 
-## 🏗️ Building for Production
+The development server is available at `http://localhost:5173`.
 
-Build your application:
+Useful commands:
+
 ```bash
 npm run build
-```
-
-The optimized build will be available in the `dist` directory.
-
-## 🚀 Deployment
-
-Deploy to Cloudflare Pages:
-```bash
+npm run typecheck
+npm run db:migrate:local
 npm run deploy
 ```
 
-> **Note**: Make sure you have configured your Cloudflare account and set up the necessary environment variables.
+Set local values in `.env`. Configure production secrets and bindings in Cloudflare Pages. Required environment keys are listed in `.env.example`.
 
-## 📁 Project Structure
-```
-react-router-cf/
-├── app/
-│   ├── components/    # Reusable components
-│   ├── routes/        # Application routes
-│   └── root.tsx      # Root component
-├── public/           # Static assets
-├── server/           # Server-side code
-│   ├── load-context.ts # Load context for context and type safety
-│   └── ...server files
-└── ...config files
-```
+## Application routes
 
-## 🔧 Tech Stack
+- `/` is the public DERforyou landing page.
+- `/legal/*` contains the Privacy Policy, Terms, Acceptable Use Policy, Domain Policy, and abuse-reporting information.
+- `/auth/*` contains sign-in, account creation, and verification screens.
+- `/dashboard/*` contains all workspace routes: overview, domains, registration, settings, contact profile, and API keys.
 
-- [React](https://reactjs.org/)
-- [React Router](https://reactrouter.com/)
-- [Vite](https://vitejs.dev/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Cloudflare Pages](https://pages.cloudflare.com/)
-- [Cloudflare D1](https://www.cloudflare.com/products/d1/)
-- [Drizzle](https://orm.drizzle.team/)
-- [Kysely](https://kysely.dev/)
-- [Framer Motion](https://www.framer.com/motion/)
+Authenticated route modules live under `app/routes/dashboard/`. The parent `/dashboard` route is the natural boundary for Better Auth session middleware.
 
-## 🔍 Important Development Notes
+## Authentication and data
 
-### Load Context File
-The `load-context.ts` file in the server directory is crucial for context availability and type safety in your application. It defines the context and types for your loader and action that will be available throughout your routes. After making any changes to this file, you must run:
+Better Auth uses D1, email one-time codes, and optional GitHub OAuth when credentials are configured. Verification mail is sent through Resend with Brevo as a fallback. Cloudflare services provide hosting, database, and DNS integration points.
+
+The current domain-registration, API-key management, and profile-editing screens are presentation-only and are not yet connected to route actions. Do not treat a hostname preview as an availability check or reservation.
+
+## UI and styling
+
+The project uses the shadcn CLI configuration in `components.json`, the CLI-generated `app/global.css`, Tailwind CSS v4's Vite plugin, and Radix-based shadcn components. Add UI components with:
 
 ```bash
-# Generate new types and run type checking
-npm run typecheck
+npx shadcn@latest add <component>
 ```
 
-This command ensures your route types are properly updated and type-safe. Skipping this step after modifying the context may lead to type errors in your routes.
+## Legal readiness
 
-## 📝 License
-
-MIT License - feel free to use this template for your projects!
+The published policy pages describe the current code-level data flows and service rules. Have Indonesian counsel review them against the operating entity, production retention/deletion procedures, Cloudflare configuration, and actual domain eligibility or suspension practices before relying on them as final legal terms. No policy can guarantee that a domain or service will never be blocked.

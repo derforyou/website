@@ -1,5 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { CheckCircle2, KeyRound, ShieldCheck } from "lucide-react";
 import { Link } from "react-router";
 
@@ -12,9 +19,13 @@ export default function VerifyPage() {
                     <p className="text-sm text-muted-foreground">Enter the one-time code sent to your address to continue.</p>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                    <div className="space-y-2">
-                        <label htmlFor="otp" className="text-sm font-medium">Verification code</label>
-                    </div>
+                    <FieldGroup>
+                        <Field>
+                            <FieldLabel htmlFor="otp">Verification code</FieldLabel>
+                            <Input id="otp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit code" />
+                            <FieldDescription>Codes expire five minutes after they are issued.</FieldDescription>
+                        </Field>
+                    </FieldGroup>
 
                     <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">

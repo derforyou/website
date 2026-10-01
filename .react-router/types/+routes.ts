@@ -14,7 +14,40 @@ type Pages = {
   "/": {
     params: {};
   };
-  "/home": {
+  "/legal/privacy": {
+    params: {};
+  };
+  "/legal/terms": {
+    params: {};
+  };
+  "/legal/acceptable-use": {
+    params: {};
+  };
+  "/legal/domain-policy": {
+    params: {};
+  };
+  "/legal/abuse": {
+    params: {};
+  };
+  "/dashboard": {
+    params: {};
+  };
+  "/dashboard/domains": {
+    params: {};
+  };
+  "/dashboard/domains/register": {
+    params: {};
+  };
+  "/dashboard/settings": {
+    params: {};
+  };
+  "/dashboard/settings/account": {
+    params: {};
+  };
+  "/dashboard/settings/contact": {
+    params: {};
+  };
+  "/dashboard/settings/api-keys": {
     params: {};
   };
   "/auth/signin": {
@@ -26,45 +59,76 @@ type Pages = {
   "/auth/verify": {
     params: {};
   };
-  "/dashboard": {
-    params: {};
-  };
-  "/domains": {
-    params: {};
-  };
-  "/domains/register": {
-    params: {};
-  };
-  "/settings": {
-    params: {};
-  };
-  "/settings/account": {
-    params: {};
-  };
-  "/settings/contact": {
-    params: {};
-  };
-  "/settings/api-keys": {
-    params: {};
-  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/home" | "/auth/signin" | "/auth/signup" | "/auth/verify" | "/dashboard" | "/domains" | "/domains/register" | "/settings" | "/settings/account" | "/settings/contact" | "/settings/api-keys";
+    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/auth/signin" | "/auth/signup" | "/auth/verify";
+  };
+  "routes/publicLayout.tsx": {
+    id: "routes/publicLayout";
+    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
     page: "/";
   };
-  "routes/mainLayout.tsx": {
-    id: "routes/mainLayout";
-    page: "/home" | "/auth/signin" | "/auth/signup" | "/auth/verify" | "/dashboard" | "/domains" | "/domains/register" | "/settings" | "/settings/account" | "/settings/contact" | "/settings/api-keys";
+  "routes/legal/privacy.tsx": {
+    id: "routes/legal/privacy";
+    page: "/legal/privacy";
   };
-  "routes/home.tsx": {
-    id: "routes/home";
-    page: "/home";
+  "routes/legal/terms.tsx": {
+    id: "routes/legal/terms";
+    page: "/legal/terms";
+  };
+  "routes/legal/acceptable-use.tsx": {
+    id: "routes/legal/acceptable-use";
+    page: "/legal/acceptable-use";
+  };
+  "routes/legal/domain-policy.tsx": {
+    id: "routes/legal/domain-policy";
+    page: "/legal/domain-policy";
+  };
+  "routes/legal/abuse.tsx": {
+    id: "routes/legal/abuse";
+    page: "/legal/abuse";
+  };
+  "routes/dashboard/layout.tsx": {
+    id: "routes/dashboard/layout";
+    page: "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys";
+  };
+  "routes/dashboard/index.tsx": {
+    id: "routes/dashboard/index";
+    page: "/dashboard";
+  };
+  "routes/dashboard/domains/index.tsx": {
+    id: "routes/dashboard/domains/index";
+    page: "/dashboard/domains";
+  };
+  "routes/dashboard/domains/register.tsx": {
+    id: "routes/dashboard/domains/register";
+    page: "/dashboard/domains/register";
+  };
+  "routes/dashboard/settings/index.tsx": {
+    id: "routes/dashboard/settings/index";
+    page: "/dashboard/settings";
+  };
+  "routes/dashboard/settings/account.tsx": {
+    id: "routes/dashboard/settings/account";
+    page: "/dashboard/settings/account";
+  };
+  "routes/dashboard/settings/contact.tsx": {
+    id: "routes/dashboard/settings/contact";
+    page: "/dashboard/settings/contact";
+  };
+  "routes/dashboard/settings/api-keys.tsx": {
+    id: "routes/dashboard/settings/api-keys";
+    page: "/dashboard/settings/api-keys";
+  };
+  "routes/authLayout.tsx": {
+    id: "routes/authLayout";
+    page: "/auth/signin" | "/auth/signup" | "/auth/verify";
   };
   "routes/auth/signin.tsx": {
     id: "routes/auth/signin";
@@ -78,49 +142,27 @@ type RouteFiles = {
     id: "routes/auth/verify";
     page: "/auth/verify";
   };
-  "routes/dashboard.tsx": {
-    id: "routes/dashboard";
-    page: "/dashboard";
-  };
-  "routes/domains.tsx": {
-    id: "routes/domains";
-    page: "/domains";
-  };
-  "routes/domains/register.tsx": {
-    id: "routes/domains/register";
-    page: "/domains/register";
-  };
-  "routes/settings.tsx": {
-    id: "routes/settings";
-    page: "/settings";
-  };
-  "routes/settings/account.tsx": {
-    id: "routes/settings/account";
-    page: "/settings/account";
-  };
-  "routes/settings/contact.tsx": {
-    id: "routes/settings/contact";
-    page: "/settings/contact";
-  };
-  "routes/settings/api-keys.tsx": {
-    id: "routes/settings/api-keys";
-    page: "/settings/api-keys";
-  };
 };
 
 type RouteModules = {
   "root": typeof import("./app/root.tsx");
+  "routes/publicLayout": typeof import("./app/routes/publicLayout.tsx");
   "routes/_index": typeof import("./app/routes/_index.tsx");
-  "routes/mainLayout": typeof import("./app/routes/mainLayout.tsx");
-  "routes/home": typeof import("./app/routes/home.tsx");
+  "routes/legal/privacy": typeof import("./app/routes/legal/privacy.tsx");
+  "routes/legal/terms": typeof import("./app/routes/legal/terms.tsx");
+  "routes/legal/acceptable-use": typeof import("./app/routes/legal/acceptable-use.tsx");
+  "routes/legal/domain-policy": typeof import("./app/routes/legal/domain-policy.tsx");
+  "routes/legal/abuse": typeof import("./app/routes/legal/abuse.tsx");
+  "routes/dashboard/layout": typeof import("./app/routes/dashboard/layout.tsx");
+  "routes/dashboard/index": typeof import("./app/routes/dashboard/index.tsx");
+  "routes/dashboard/domains/index": typeof import("./app/routes/dashboard/domains/index.tsx");
+  "routes/dashboard/domains/register": typeof import("./app/routes/dashboard/domains/register.tsx");
+  "routes/dashboard/settings/index": typeof import("./app/routes/dashboard/settings/index.tsx");
+  "routes/dashboard/settings/account": typeof import("./app/routes/dashboard/settings/account.tsx");
+  "routes/dashboard/settings/contact": typeof import("./app/routes/dashboard/settings/contact.tsx");
+  "routes/dashboard/settings/api-keys": typeof import("./app/routes/dashboard/settings/api-keys.tsx");
+  "routes/authLayout": typeof import("./app/routes/authLayout.tsx");
   "routes/auth/signin": typeof import("./app/routes/auth/signin.tsx");
   "routes/auth/signup": typeof import("./app/routes/auth/signup.tsx");
   "routes/auth/verify": typeof import("./app/routes/auth/verify.tsx");
-  "routes/dashboard": typeof import("./app/routes/dashboard.tsx");
-  "routes/domains": typeof import("./app/routes/domains.tsx");
-  "routes/domains/register": typeof import("./app/routes/domains/register.tsx");
-  "routes/settings": typeof import("./app/routes/settings.tsx");
-  "routes/settings/account": typeof import("./app/routes/settings/account.tsx");
-  "routes/settings/contact": typeof import("./app/routes/settings/contact.tsx");
-  "routes/settings/api-keys": typeof import("./app/routes/settings/api-keys.tsx");
 };
