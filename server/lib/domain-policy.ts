@@ -1,3 +1,9 @@
+import abuse from "../domain-policy/abuse.json";
+import brands from "../domain-policy/brands.json";
+import existingHostnames from "../domain-policy/existing-hostnames.json";
+import security from "../domain-policy/security.json";
+import services from "../domain-policy/services.json";
+import system from "../domain-policy/system.json";
 import type { CloudflareRuntime } from "../services/cloudflare";
 import { listDnsRecords } from "../services/cloudflare";
 
@@ -7,14 +13,18 @@ export type DomainPolicyCategory = {
   names: string[];
 };
 
-const policyModules = import.meta.glob<{ default: DomainPolicyCategory }>(
-  "../domain-policy/*.json",
-  { eager: true },
-);
+const policyModules: DomainPolicyCategory[] = [
+  abuse,
+  brands,
+  existingHostnames,
+  security,
+  services,
+  system,
+];
 
 function configuredReservedNames() {
-  return Object.values(policyModules)
-    .flatMap((module) => module.default?.names ?? [])
+  return policyModules
+    .flatMap((module) => module.names ?? [])
     .map((value) => normalizeReservedName(value))
     .filter(Boolean);
 }
