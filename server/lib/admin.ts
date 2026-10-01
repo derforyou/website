@@ -6,7 +6,7 @@ export function parseAdminEmails(rawValue?: string | null) {
   if (!rawValue) return [];
 
   return rawValue
-    .split(",")
+    .split(/\s*,\s*/)
     .map((value) => normalizeAdminEmail(value))
     .filter(Boolean)
     .filter((value, index, entries) => entries.indexOf(value) === index);
