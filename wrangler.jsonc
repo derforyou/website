@@ -10,6 +10,8 @@
     "pages_build_output_dir": "./build/client",
     "vars": {
         "APP_URL": "https://der.my.id",
+        "EMAIL_SENDER_NAME": "DER Platform",
+        "EMAIL_SENDER_EMAIL": "noreply@notify.der.my.id",
         "ADMIN_EMAIL": "hostmaster@der.my.id,dd@dyzulk.com,dev@dyzulk.com"
     },
     "d1_databases": [

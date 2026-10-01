@@ -1,5 +1,7 @@
 export type RuntimeEnv = {
   APP_URL?: string;
+  EMAIL_SENDER_NAME?: string;
+  EMAIL_SENDER_EMAIL?: string;
   BETTER_AUTH_SECRET?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
@@ -17,6 +19,8 @@ export type RuntimeEnv = {
 export function getRuntimeEnv(env: Partial<RuntimeEnv> = {}): RuntimeEnv {
   return {
     APP_URL: env.APP_URL ?? "http://localhost:5173",
+    EMAIL_SENDER_NAME: env.EMAIL_SENDER_NAME,
+    EMAIL_SENDER_EMAIL: env.EMAIL_SENDER_EMAIL,
     BETTER_AUTH_SECRET: env.BETTER_AUTH_SECRET ?? "development-secret-change-me",
     GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: env.GITHUB_CLIENT_SECRET,
