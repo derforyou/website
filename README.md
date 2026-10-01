@@ -10,7 +10,7 @@ cp .env.example .env
 npm run dev
 ```
 
-The development server is available at `http://localhost:5173`.
+The full-stack Cloudflare Pages development server is available at `http://localhost:8788` and serves the API Functions. It builds the app before starting; rerun the build after source changes. Use `npm run dev:ui` for Vite UI-only development, which does not serve the Pages API.
 
 Useful commands:
 

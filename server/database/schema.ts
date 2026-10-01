@@ -204,25 +204,6 @@ export const domain = sqliteTable(
   ]
 );
 
-export const dnsRecord = sqliteTable(
-  "dnsRecord",
-  {
-    id: text("id").primaryKey(),
-    domainId: text("domainId")
-      .notNull()
-      .references(() => domain.id, { onDelete: "cascade" }),
-    cloudflareRecordId: text("cloudflareRecordId").unique(),
-    type: text("type").notNull(),
-    name: text("name").notNull(),
-    content: text("content").notNull(),
-    ttl: integer("ttl").notNull().default(1),
-    proxied: integer("proxied", { mode: "boolean" }).notNull().default(false),
-    createdAt: timestamp("createdAt").notNull(),
-    updatedAt: timestamp("updatedAt").notNull(),
-  },
-  (table) => [index("dns_record_domain_id_idx").on(table.domainId)]
-);
-
 export const apiKey = sqliteTable(
   "apiKey",
   {
@@ -279,7 +260,6 @@ export const domainRelations = relations(domain, ({ one, many }) => ({
   owner: one(user, { fields: [domain.ownerId], references: [user.id] }),
   contact: one(contact, { fields: [domain.contactId], references: [contact.id] }),
   registration: one(domainRegistration, { fields: [domain.registrationId], references: [domainRegistration.id] }),
-  dnsRecords: many(dnsRecord),
 }));
 
 export const contactRelations = relations(contact, ({ one }) => ({
@@ -295,7 +275,6 @@ export const schema = {
   contact,
   domainRegistration,
   domain,
-  dnsRecord,
   apiKey,
   auditLog,
   userRelations,

@@ -193,27 +193,26 @@ export async function action({ request, context, params }: ApiRouteArgs): Promis
 
   const { env, db, domain } = owned;
   if (domain.status !== "active") return problem(409, "Conflict", "Suspended domains cannot be changed.");
-  const payload = await request.json().catch(() => null);
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return problem(400, "Bad Request", "A JSON payload is required.");
-  const body = payload as Record<string, unknown>;
 
   if (request.url.includes("/dns-records")) {
     if (domain.dnsMode !== "managed") return problem(409, "Conflict", "Managed DNS is disabled while custom nameservers are active.");
     if (request.method !== "POST" && request.method !== "PUT" && request.method !== "DELETE") return methodNotAllowed("GET, POST, PUT, DELETE");
 
+    const recordId = params.recordId;
     try {
       const allRecords = await listZoneDnsRecords(env, ZONE_NAME) as unknown as CloudflareRecord[];
       const ownedRecords = managedRecordRows(allRecords, domain.hostname);
-      const recordId = params.recordId;
       if (request.method === "DELETE") {
         if (!recordId) return problem(400, "Bad Request", "A DNS record id is required.");
         const current = ownedRecords.find((record) => record.id === recordId);
         if (!current) return problem(404, "Not Found", "The DNS record could not be found.");
         await deleteManagedDnsRecord(env, ZONE_NAME, recordId);
-        await db.delete(schema.dnsRecord).where(eq(schema.dnsRecord.cloudflareRecordId, recordId));
         return jsonResponse({ data: { id: recordId, deleted: true } });
       }
 
+      const payload = await request.json().catch(() => null);
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) return problem(400, "Bad Request", "A JSON payload is required.");
+      const body = payload as Record<string, unknown>;
       const current = recordId ? ownedRecords.find((record) => record.id === recordId) : undefined;
       if (recordId && !current) return problem(404, "Not Found", "The DNS record could not be found.");
       if (request.method === "PUT" && !recordId) return problem(400, "Bad Request", "A DNS record id is required.");
@@ -222,26 +221,6 @@ export async function action({ request, context, params }: ApiRouteArgs): Promis
       const saved = (request.method === "POST"
         ? await createManagedDnsRecord(env, ZONE_NAME, record)
         : await updateManagedDnsRecord(env, ZONE_NAME, recordId!, record)) as unknown as CloudflareRecord;
-      const now = new Date();
-      const [existing] = await db.select({ id: schema.dnsRecord.id })
-        .from(schema.dnsRecord)
-        .where(eq(schema.dnsRecord.cloudflareRecordId, saved.id))
-        .limit(1);
-      const values = {
-        domainId: domain.id,
-        cloudflareRecordId: saved.id,
-        type: saved.type,
-        name: saved.name,
-        content: saved.content ?? JSON.stringify(saved.data ?? {}),
-        ttl: saved.ttl,
-        proxied: saved.proxied ?? false,
-        updatedAt: now,
-      };
-      if (existing) {
-        await db.update(schema.dnsRecord).set(values).where(eq(schema.dnsRecord.id, existing.id));
-      } else {
-        await db.insert(schema.dnsRecord).values({ id: crypto.randomUUID(), ...values, createdAt: now });
-      }
       return jsonResponse({ data: recordView(saved) }, request.method === "POST" ? 201 : 200);
     } catch (error) {
       return problem(502, "Bad Gateway", error instanceof Error ? error.message : "The DNS record operation failed.");
@@ -249,6 +228,9 @@ export async function action({ request, context, params }: ApiRouteArgs): Promis
   }
 
   if (request.method !== "PATCH") return methodNotAllowed("GET, PATCH");
+  const payload = await request.json().catch(() => null);
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return problem(400, "Bad Request", "A JSON payload is required.");
+  const body = payload as Record<string, unknown>;
   const dnsMode = body.dnsMode;
   if (dnsMode !== "managed" && dnsMode !== "custom") return problem(400, "Bad Request", "Choose a valid DNS mode.");
   const nameservers = dnsMode === "custom" ? parseNameservers(body.customNameservers) : [];
@@ -290,7 +272,6 @@ export async function action({ request, context, params }: ApiRouteArgs): Promis
     }
 
     for (const record of existingNsRecords) await deleteManagedDnsRecord(env, ZONE_NAME, record.id);
-    await db.delete(schema.dnsRecord).where(and(eq(schema.dnsRecord.domainId, domain.id), eq(schema.dnsRecord.type, "NS")));
     await db.update(schema.domain).set({
       dnsMode: "managed",
       customNameservers: null,

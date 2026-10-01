@@ -10,7 +10,6 @@ export type Tables = {
   twoFactor: Kyselify<typeof schema.twoFactor>;
   contact: Kyselify<typeof schema.contact>;
   domain: Kyselify<typeof schema.domain>;
-  dnsRecord: Kyselify<typeof schema.dnsRecord>;
   apiKey: Kyselify<typeof schema.apiKey>;
   auditLog: Kyselify<typeof schema.auditLog>;
 };

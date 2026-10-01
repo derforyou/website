@@ -4,8 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "react-router dev",
-    "dev:wrangler": "wrangler pages dev",
+    "dev": "npm run build && wrangler pages dev --local",
+    "dev:ui": "react-router dev",
+    "dev:wrangler": "wrangler pages dev --local",
     "generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply --local db",
     "db:migrate:prod": "tsx scripts/migrate.ts",

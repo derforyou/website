@@ -8,6 +8,13 @@
       "when": 1790847013012,
       "tag": "0000_exotic_swarm",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1790851858769,
+      "tag": "0001_outstanding_joystick",
+      "breakpoints": true
     }
   ]
 }

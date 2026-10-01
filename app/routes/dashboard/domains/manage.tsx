@@ -1,6 +1,7 @@
 import { DomainStatusBadge } from "@/components/domain-status-badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,7 +51,13 @@ const recordTypes = [
 const emptyRecord: RecordForm = { type: "A", name: "@", content: "", ttl: "1", proxied: false, extraFields: "" };
 
 async function readJson(response: Response) {
-    const result = await response.json() as { data?: { domain?: Domain; records?: DnsRecord[]; record?: DnsRecord }; detail?: string };
+    const responseText = await response.text();
+    let result: { data?: { domain?: Domain; records?: DnsRecord[]; record?: DnsRecord }; detail?: string };
+    try {
+        result = JSON.parse(responseText) as typeof result;
+    } catch {
+        throw new Error(`The API returned a non-JSON response (HTTP ${response.status}). Make sure the Cloudflare Pages API is available.`);
+    }
     if (!response.ok) throw new Error(result.detail ?? "The request failed.");
     return result;
 }
@@ -59,10 +66,11 @@ export default function ManageDomainPage() {
     const { domainId } = useParams();
     const [domain, setDomain] = useState<Domain | null>(null);
     const [records, setRecords] = useState<DnsRecord[]>([]);
-    const [dnsMode, setDnsMode] = useState<DnsMode>("managed");
+    const [dnsModeDraft, setDnsModeDraft] = useState<DnsMode>("managed");
     const [nameservers, setNameservers] = useState(["", ""]);
     const [recordForm, setRecordForm] = useState<RecordForm>(emptyRecord);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [recordDialogOpen, setRecordDialogOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -73,7 +81,7 @@ export default function ManageDomainPage() {
         const nextDomain = detailResult.data?.domain;
         if (!nextDomain) throw new Error("Domain details were not returned.");
         setDomain(nextDomain);
-        setDnsMode(nextDomain.dnsMode);
+        setDnsModeDraft(nextDomain.dnsMode);
         setNameservers(nextDomain.customNameservers.length >= 2 ? nextDomain.customNameservers : ["", ""]);
         if (nextDomain.dnsMode === "managed") {
             const dnsResult = await readJson(await fetch(`/api/v1/domains/${encodeURIComponent(domainId)}/dns-records`));
@@ -106,11 +114,11 @@ export default function ManageDomainPage() {
             const response = await fetch(`/api/v1/domains/${encodeURIComponent(domainId)}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ dnsMode, customNameservers: dnsMode === "custom" ? nameservers : [] }),
+                body: JSON.stringify({ dnsMode: dnsModeDraft, customNameservers: dnsModeDraft === "custom" ? nameservers : [] }),
             });
             await readJson(response);
             await loadDomain();
-            toast.success(dnsMode === "custom" ? "Custom nameservers are active." : "Managed DNS is active.");
+            toast.success(dnsModeDraft === "custom" ? "Custom nameservers are active." : "Managed DNS is active.");
         } catch (saveError) {
             const message = saveError instanceof Error ? saveError.message : "Unable to update nameservers.";
             setError(message);
@@ -135,6 +143,13 @@ export default function ManageDomainPage() {
             extraFields: Object.keys(extra).length ? JSON.stringify(extra, null, 2) : "",
         });
         setEditingId(record.id);
+        setRecordDialogOpen(true);
+    }
+
+    function createRecord() {
+        setRecordForm(emptyRecord);
+        setEditingId(null);
+        setRecordDialogOpen(true);
     }
 
     async function saveRecord(event: FormEvent<HTMLFormElement>) {
@@ -170,6 +185,7 @@ export default function ManageDomainPage() {
             await loadDomain();
             setRecordForm(emptyRecord);
             setEditingId(null);
+            setRecordDialogOpen(false);
             toast.success(editingId ? "DNS record updated." : "DNS record created.");
         } catch (saveError) {
             const message = saveError instanceof Error ? saveError.message : "Unable to save DNS record.";
@@ -221,10 +237,10 @@ export default function ManageDomainPage() {
                 </div>
                 <form onSubmit={saveDnsMode} className="flex flex-col gap-5">
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <Button type="button" variant={dnsMode === "managed" ? "default" : "outline"} onClick={() => setDnsMode("managed")}>Managed DNS</Button>
-                        <Button type="button" variant={dnsMode === "custom" ? "default" : "outline"} onClick={() => setDnsMode("custom")}>Custom nameservers</Button>
+                        <Button type="button" variant={dnsModeDraft === "managed" ? "default" : "outline"} onClick={() => setDnsModeDraft("managed")}>Managed DNS</Button>
+                        <Button type="button" variant={dnsModeDraft === "custom" ? "default" : "outline"} onClick={() => setDnsModeDraft("custom")}>Custom nameservers</Button>
                     </div>
-                    {dnsMode === "custom" && (
+                    {dnsModeDraft === "custom" && (
                         <FieldGroup>
                             <Field>
                                 <FieldLabel>Custom nameservers</FieldLabel>
@@ -245,56 +261,24 @@ export default function ManageDomainPage() {
                 </form>
             </section>
 
-            {dnsMode === "managed" ? (
+            {domain.dnsMode === "managed" ? (
                 <section className="flex flex-col gap-5">
-                    <div>
-                        <h2 className="text-lg font-medium">Managed DNS records</h2>
-                        <p className="mt-1 text-sm text-muted-foreground">Records are managed in the Cloudflare zone. Subdomain records are supported; proxying is limited to this hostname's apex.</p>
-                    </div>
-                    <form onSubmit={saveRecord} className="flex flex-col gap-5 border-b pb-6">
-                        <FieldGroup className="grid gap-4 md:grid-cols-2">
-                            <Field>
-                                <FieldLabel htmlFor="record-type">Record type</FieldLabel>
-                                <Select value={recordForm.type} onValueChange={(value) => setRecordForm((current) => ({ ...current, type: value }))}>
-                                    <SelectTrigger id="record-type" className="w-full"><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        {recordTypes.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </Field>
-                            <Field>
-                                <FieldLabel htmlFor="record-name">Name</FieldLabel>
-                                <Input id="record-name" value={recordForm.name} onChange={(event) => setRecordForm((current) => ({ ...current, name: event.target.value }))} placeholder="@ or api" required />
-                                <FieldDescription>Use @ for the domain root, a label for a subdomain, or a full hostname within this domain.</FieldDescription>
-                            </Field>
-                            <Field>
-                                <FieldLabel htmlFor="record-content">Content</FieldLabel>
-                                <Textarea id="record-content" value={recordForm.content} onChange={(event) => setRecordForm((current) => ({ ...current, content: event.target.value }))} placeholder="Record value" className="min-h-20" />
-                            </Field>
-                            <Field>
-                                <FieldLabel htmlFor="record-ttl">TTL (seconds)</FieldLabel>
-                                <Input id="record-ttl" type="number" min={1} max={86400} value={recordForm.ttl} onChange={(event) => setRecordForm((current) => ({ ...current, ttl: event.target.value }))} required />
-                            </Field>
-                        </FieldGroup>
-                        <Field>
-                            <FieldLabel htmlFor="record-extra">Type-specific fields (JSON)</FieldLabel>
-                            <Textarea id="record-extra" value={recordForm.extraFields} onChange={(event) => setRecordForm((current) => ({ ...current, extraFields: event.target.value }))} placeholder={'{"data":{"priority":10,"target":"mail.example.net"}}'} className="min-h-24 font-mono text-xs" />
-                            <FieldDescription>Use Cloudflare fields such as data, priority, comment, tags, or settings for record types that need them.</FieldDescription>
-                        </Field>
-                        <label className="flex w-fit items-center gap-3 text-sm">
-                            <Switch checked={recordForm.proxied} onCheckedChange={(checked) => setRecordForm((current) => ({ ...current, proxied: checked }))} />
-                            Proxy through Cloudflare (apex A, AAAA, or CNAME only)
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            <Button type="submit" disabled={saving || domain.status !== "active"}>{saving ? "Saving…" : editingId ? "Update record" : "Add record"}</Button>
-                            {editingId && <Button type="button" variant="outline" onClick={() => { setEditingId(null); setRecordForm(emptyRecord); }}>Cancel edit</Button>}
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <h2 className="text-lg font-medium">DNS records</h2>
+                            <p className="mt-1 text-sm text-muted-foreground">Live records for {domain.hostname}. Changes are applied directly to Cloudflare.</p>
                         </div>
-                    </form>
-                    {records.length === 0 ? <p className="text-sm text-muted-foreground">No DNS records found for this domain.</p> : (
-                        <Table>
+                        <Button type="button" onClick={createRecord} disabled={saving || domain.status !== "active"}>
+                            <Plus data-icon="inline-start" />Create record
+                        </Button>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <Table className="min-w-[760px]">
                             <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Name</TableHead><TableHead>Content</TableHead><TableHead>TTL</TableHead><TableHead>Proxy</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                             <TableBody>
-                                {records.map((record) => (
+                                {records.length === 0 ? (
+                                    <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No DNS records found for this domain.</TableCell></TableRow>
+                                ) : records.map((record) => (
                                     <TableRow key={record.id}>
                                         <TableCell className="font-medium">{record.type}</TableCell>
                                         <TableCell>{record.name}</TableCell>
@@ -311,7 +295,54 @@ export default function ManageDomainPage() {
                                 ))}
                             </TableBody>
                         </Table>
-                    )}
+                    </div>
+                    <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+                        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+                            <DialogHeader>
+                                <DialogTitle>{editingId ? "Edit DNS record" : "Create DNS record"}</DialogTitle>
+                                <DialogDescription>Changes are applied directly to the live Cloudflare zone.</DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={saveRecord} className="flex flex-col gap-5">
+                                <FieldGroup className="grid gap-4 md:grid-cols-2">
+                                    <Field>
+                                        <FieldLabel htmlFor="record-type">Record type</FieldLabel>
+                                        <Select value={recordForm.type} onValueChange={(value) => setRecordForm((current) => ({ ...current, type: value }))}>
+                                            <SelectTrigger id="record-type" className="w-full"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {recordTypes.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="record-name">Name</FieldLabel>
+                                        <Input id="record-name" value={recordForm.name} onChange={(event) => setRecordForm((current) => ({ ...current, name: event.target.value }))} placeholder="@ or api" required />
+                                        <FieldDescription>Use @ for the domain root or a hostname within this domain.</FieldDescription>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="record-content">Content</FieldLabel>
+                                        <Textarea id="record-content" value={recordForm.content} onChange={(event) => setRecordForm((current) => ({ ...current, content: event.target.value }))} placeholder="Record value" className="min-h-20" />
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="record-ttl">TTL (seconds)</FieldLabel>
+                                        <Input id="record-ttl" type="number" min={1} max={86400} value={recordForm.ttl} onChange={(event) => setRecordForm((current) => ({ ...current, ttl: event.target.value }))} required />
+                                    </Field>
+                                </FieldGroup>
+                                <Field>
+                                    <FieldLabel htmlFor="record-extra">Type-specific fields (JSON)</FieldLabel>
+                                    <Textarea id="record-extra" value={recordForm.extraFields} onChange={(event) => setRecordForm((current) => ({ ...current, extraFields: event.target.value }))} placeholder={'{"data":{"priority":10,"target":"mail.example.net"}}'} className="min-h-24 font-mono text-xs" />
+                                    <FieldDescription>Optional Cloudflare fields such as data, priority, comment, tags, or settings.</FieldDescription>
+                                </Field>
+                                <label className="flex w-fit items-center gap-3 text-sm">
+                                    <Switch checked={recordForm.proxied} onCheckedChange={(checked) => setRecordForm((current) => ({ ...current, proxied: checked }))} />
+                                    Proxy through Cloudflare (apex A, AAAA, or CNAME only)
+                                </label>
+                                <div className="flex flex-wrap justify-end gap-2">
+                                    <Button type="button" variant="outline" onClick={() => setRecordDialogOpen(false)}>Cancel</Button>
+                                    <Button type="submit" disabled={saving || domain.status !== "active"}>{saving ? "Saving…" : editingId ? "Save changes" : "Create record"}</Button>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </section>
             ) : (
                 <section className="flex flex-col gap-3 border-t pt-6">
