@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
-import type { RuntimeEnv } from "../../../../server/lib/env";
 import type { ApiRouteArgs } from "../../../../server/lib/api-route";
-import { authenticateBearer, createApiDatabase, isRecord, jsonBody, jsonResponse, methodNotAllowed, problem, unauthorizedBearer } from "../../../../server/services/api-auth";
+import type { RuntimeEnv } from "../../../../server/lib/env";
+import { authenticateApiUser, createApiDatabase, isRecord, jsonBody, jsonResponse, methodNotAllowed, problem, unauthorizedApiUser } from "../../../../server/services/api-auth";
 
 const contactFields = {
   fullName: schema.contact.fullName,
@@ -23,8 +23,8 @@ export async function loader({ request, context }: ApiRouteArgs) {
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
-  const identity = await authenticateBearer(request, db);
-  if (!identity) return unauthorizedBearer();
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return unauthorizedApiUser();
   const [contact] = await db.select(contactFields)
     .from(schema.contact)
     .where(eq(schema.contact.userId, identity.user.id))
@@ -38,8 +38,8 @@ export async function action({ request, context }: ApiRouteArgs) {
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
-  const identity = await authenticateBearer(request, db);
-  if (!identity) return unauthorizedBearer();
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return unauthorizedApiUser();
   const body = await jsonBody(request);
   if (!isRecord(body)) return problem(400, "Bad Request", "A JSON contact object is required.");
 

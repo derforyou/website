@@ -3,7 +3,7 @@ import * as schema from "../../../../server/database/schema";
 import { isAdminEmail } from "../../../../server/lib/admin";
 import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import type { RuntimeEnv } from "../../../../server/lib/env";
-import { authenticateSession, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
+import { authenticateApiUser, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedApiUser } from "../../../../server/services/api-auth";
 
 export async function loader({ request, context }: ApiRouteArgs) {
   if (request.method !== "GET") return methodNotAllowed("GET");
@@ -12,9 +12,9 @@ export async function loader({ request, context }: ApiRouteArgs) {
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
-  const session = await authenticateSession(request, env);
-  if (!session) return unauthorizedSession();
-  if (!isAdminEmail(session.user.email, env.ADMIN_EMAIL)) {
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return unauthorizedApiUser();
+  if (!isAdminEmail(identity.user.email, env.ADMIN_EMAIL)) {
     return problem(403, "Forbidden", "Only authorized administrators can moderate domain registrations.");
   }
 
@@ -69,9 +69,9 @@ export async function action({ request, context }: ApiRouteArgs) {
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
-  const session = await authenticateSession(request, env);
-  if (!session) return unauthorizedSession();
-  if (!isAdminEmail(session.user.email, env.ADMIN_EMAIL)) {
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return unauthorizedApiUser();
+  if (!isAdminEmail(identity.user.email, env.ADMIN_EMAIL)) {
     return problem(403, "Forbidden", "Only authorized administrators can moderate domain registrations.");
   }
 
@@ -113,9 +113,9 @@ export async function action({ request, context }: ApiRouteArgs) {
       await db.insert(schema.contact).values({
         id: contactId,
         userId: registration.userId,
-        fullName: session.user.name || "DERforyou user",
+        fullName: identity.user.name || "DERforyou user",
         organization: null,
-        email: session.user.email || "",
+        email: identity.user.email || "",
         phone: null,
         addressLine1: null,
         addressLine2: null,
@@ -149,7 +149,7 @@ export async function action({ request, context }: ApiRouteArgs) {
     await db.update(schema.domainRegistration)
       .set({
         status: "approved",
-        decidedByUserId: session.user.id,
+        decidedByUserId: identity.user.id,
         decisionAt: createdAt,
         rejectedReason: null,
         updatedAt: createdAt,
@@ -174,7 +174,7 @@ export async function action({ request, context }: ApiRouteArgs) {
       .set({
         status: "rejected",
         rejectedReason: reason.trim() || "Rejected by an administrator.",
-        decidedByUserId: session.user.id,
+        decidedByUserId: identity.user.id,
         decisionAt,
         updatedAt: decisionAt,
       })

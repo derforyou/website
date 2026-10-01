@@ -4,9 +4,11 @@ info:
   version: 1.0.0
   summary: Account and developer-domain API
   description: >-
-    API for DERforyou. Browser sessions are managed by Better Auth and stored in
-    D1. SDK-facing resource operations use individually revocable API keys in
-    the standard Authorization: Bearer header. API keys are shown only once.
+    API for DERforyou. Protected user operations accept either a Better Auth
+    browser session cookie or an individually revocable API key in the standard
+    Authorization: Bearer header. Both credentials authorize as their user;
+    resource access is limited to that user's records, and moderation requires
+    the configured administrator account. API keys are shown only once.
   contact:
     name: DERforyou Support
     email: hostmaster@der.my.id
@@ -26,6 +28,7 @@ paths:
       operationId: sendEmailVerificationOtp
       summary: Send a sign-in code by email
       tags: [Authentication]
+      security: []
       requestBody:
         required: true
         content:
@@ -46,6 +49,7 @@ paths:
       operationId: signInWithEmailOtp
       summary: Sign in or create an account using an email code
       tags: [Authentication]
+      security: []
       requestBody:
         required: true
         content:
@@ -70,6 +74,7 @@ paths:
       operationId: signInWithSocialProvider
       summary: Start a social sign-in flow
       tags: [Authentication]
+      security: []
       requestBody:
         required: true
         content:
@@ -122,13 +127,14 @@ paths:
   /api/v1/me:
     get:
       operationId: getCurrentUser
-      summary: Get the user associated with the API key
+      summary: Get the authenticated user
       tags: [Account]
       security:
         - bearerAuth: []
+        - betterAuthSession: []
       responses:
         '200':
-          description: Current API-key owner.
+          description: Current authenticated user.
           content:
             application/json:
               schema:
@@ -141,6 +147,7 @@ paths:
       summary: Check whether a subdomain is already registered
       description: Checks DERforyou records only; it does not reserve a name or verify external DNS state.
       tags: [Domains]
+      security: []
       parameters:
         - name: subdomain
           in: query
@@ -170,10 +177,11 @@ paths:
   /api/v1/domains:
     get:
       operationId: listOwnedDomains
-      summary: List domains owned by the API-key owner
+      summary: List domains owned by the authenticated user
       tags: [Domains]
       security:
         - bearerAuth: []
+        - betterAuthSession: []
       responses:
         '200':
           description: Domain collection.
@@ -183,13 +191,237 @@ paths:
                 $ref: '#/components/schemas/DomainListResponse'
         default:
           $ref: '#/components/responses/Problem'
+    post:
+      operationId: requestDomainRegistration
+      summary: Request a subdomain registration
+      description: Creates a pending registration request for the authenticated user.
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDomainRegistrationRequest'
+      responses:
+        '200':
+          description: Pending registration request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainRegistrationResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/domains/{domainId}:
+    parameters:
+      - name: domainId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getDomain
+      summary: Get an owned domain
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      responses:
+        '200':
+          description: Domain details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    patch:
+      operationId: updateDomainDnsMode
+      summary: Update an owned domain's DNS mode
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDnsModeRequest'
+      responses:
+        '200':
+          description: DNS mode updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateDnsModeResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/domains/{domainId}/dns-records:
+    parameters:
+      - name: domainId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listDomainDnsRecords
+      summary: List DNS records for an owned domain
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      responses:
+        '200':
+          description: DNS records, or an empty disabled result when custom nameservers are active.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnsRecordListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      operationId: createDomainDnsRecord
+      summary: Create a DNS record for an owned domain
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DnsRecordInput'
+      responses:
+        '201':
+          description: DNS record created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnsRecordResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/domains/{domainId}/dns-records/{recordId}:
+    parameters:
+      - name: domainId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: recordId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getDomainDnsRecord
+      summary: Get an owned domain DNS record
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      responses:
+        '200':
+          description: DNS record details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnsRecordResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    put:
+      operationId: updateDomainDnsRecord
+      summary: Replace a DNS record for an owned domain
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DnsRecordInput'
+      responses:
+        '200':
+          description: DNS record updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnsRecordResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    delete:
+      operationId: deleteDomainDnsRecord
+      summary: Delete a DNS record for an owned domain
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      responses:
+        '200':
+          description: DNS record deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedDnsRecordResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /api/v1/domains/moderation:
+    get:
+      operationId: listModerationQueue
+      summary: List pending registrations and active domains
+      description: Requires an authenticated administrator account.
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      responses:
+        '200':
+          description: Moderation queue and active domains.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationQueueResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      operationId: moderateDomainRegistration
+      summary: Approve, reject, suspend, unsuspend, or delete a domain record
+      description: Requires an authenticated administrator account.
+      tags: [Domains]
+      security:
+        - bearerAuth: []
+        - betterAuthSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModerationActionRequest'
+      responses:
+        '200':
+          description: Moderation action completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModerationActionResponse'
+        default:
+          $ref: '#/components/responses/Problem'
   /api/v1/settings/contact:
     get:
       operationId: getContactDetails
-      summary: Get the API-key owner's contact profile
+      summary: Get the authenticated user's contact profile
       tags: [Account]
       security:
         - bearerAuth: []
+        - betterAuthSession: []
       responses:
         '200':
           description: Contact profile, or null when none has been saved.
@@ -201,10 +433,11 @@ paths:
           $ref: '#/components/responses/Problem'
     put:
       operationId: updateContactDetails
-      summary: Create or replace the API-key owner's contact profile
+      summary: Create or replace the authenticated user's contact profile
       tags: [Account]
       security:
         - bearerAuth: []
+        - betterAuthSession: []
       requestBody:
         required: true
         content:
@@ -288,7 +521,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: DERforyou API key
-      description: Use the API key as Authorization: Bearer <token>. Keys are created through the authenticated browser session.
+      description: 'Use Authorization: Bearer <token>. API keys are created through the authenticated browser session and shown only once.'
     betterAuthSession:
       type: apiKey
       in: cookie
@@ -470,32 +703,327 @@ components:
             status:
               type: string
               enum: [available, unavailable]
-    DomainListResponse:
-      type: object
-      required: [data]
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/Domain'
     Domain:
       type: object
-      required: [id, name, status, dnsSyncStatus, createdAt]
+      required: [id, hostname, status, dnsMode, dnsSyncStatus, createdAt]
       properties:
         id:
           type: string
           format: uuid
-        name:
+        hostname:
           type: string
         status:
           type: string
           enum: [active, suspended]
+        dnsMode:
+          type: string
+          enum: [managed, custom]
+        customNameservers:
+          type: [string, 'null']
         dnsSyncStatus:
           type: string
           enum: [not-configured, pending, synced, failed]
         createdAt:
           type: string
           format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      additionalProperties: true
+    CreateDomainRegistrationRequest:
+      type: object
+      required: [subdomain]
+      properties:
+        subdomain:
+          type: string
+          minLength: 1
+          maxLength: 63
+        dnsMode:
+          type: string
+          enum: [managed, custom]
+          default: managed
+        customNameservers:
+          oneOf:
+            - type: array
+              minItems: 2
+              maxItems: 5
+              items:
+                type: string
+            - type: string
+          description: Required as 2 to 5 unique hostnames when dnsMode is custom.
+        notes:
+          type: string
+      additionalProperties: false
+    DomainRegistrationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [id, subdomain, hostname, status, dnsMode, createdAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            subdomain:
+              type: string
+            hostname:
+              type: string
+            status:
+              type: string
+              const: pending
+            dnsMode:
+              type: string
+              enum: [managed, custom]
+            customNameservers:
+              type: [string, 'null']
+            notes:
+              type: [string, 'null']
+            createdAt:
+              type: string
+              format: date-time
+    DomainListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [domains, registrations]
+          properties:
+            domains:
+              type: array
+              items:
+                $ref: '#/components/schemas/Domain'
+            registrations:
+              type: array
+              items:
+                $ref: '#/components/schemas/DomainRegistration'
+    DomainRegistration:
+      type: object
+      required: [id, hostname, status, dnsMode, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        hostname:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        dnsMode:
+          type: string
+          enum: [managed, custom]
+        customNameservers:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        rejectedReason:
+          type: [string, 'null']
+        decisionAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    DomainResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [domain]
+          properties:
+            domain:
+              allOf:
+                - $ref: '#/components/schemas/Domain'
+                - type: object
+                  properties:
+                    customNameservers:
+                      type: array
+                      items:
+                        type: string
+    UpdateDnsModeRequest:
+      type: object
+      required: [dnsMode]
+      properties:
+        dnsMode:
+          type: string
+          enum: [managed, custom]
+        customNameservers:
+          oneOf:
+            - type: array
+              minItems: 2
+              maxItems: 5
+              items:
+                type: string
+            - type: string
+          description: Required as 2 to 5 unique hostnames when dnsMode is custom.
+    UpdateDnsModeResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [dnsMode, customNameservers]
+          properties:
+            dnsMode:
+              type: string
+              enum: [managed, custom]
+            customNameservers:
+              type: array
+              items:
+                type: string
+    DnsRecordInput:
+      type: object
+      required: [type, name, content]
+      properties:
+        type:
+          type: string
+          enum: [A, AAAA, CAA, CERT, CNAME, DNSKEY, DS, HTTPS, LOC, MX, NAPTR, NS, OPENPGPKEY, PTR, SMIMEA, SRV, SSHFP, SVCB, TLSA, TXT, URI]
+        name:
+          type: string
+        content:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        ttl:
+          type: integer
+          minimum: 1
+          maximum: 86400
+          default: 1
+        proxied:
+          type: boolean
+          default: false
+        priority:
+          type: integer
+        comment:
+          type: [string, 'null']
+        tags:
+          type: array
+          items:
+            type: string
+        settings:
+          type: object
+          additionalProperties: true
+    DnsRecord:
+      type: object
+      required: [id, type, name, content, ttl, proxied, priority, data, comment, tags, settings]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+        content:
+          type: string
+        ttl:
+          type: integer
+        proxied:
+          type: boolean
+        priority:
+          type: [integer, 'null']
+        data:
+          type: [object, 'null']
+          additionalProperties: true
+        comment:
+          type: [string, 'null']
+        tags:
+          type: array
+          items:
+            type: string
+        settings:
+          type: object
+          additionalProperties: true
+    DnsRecordResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/DnsRecord'
+    DnsRecordListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [records]
+          properties:
+            records:
+              type: array
+              items:
+                $ref: '#/components/schemas/DnsRecord'
+            disabled:
+              type: boolean
+    DeletedDnsRecordResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [id, deleted]
+          properties:
+            id:
+              type: string
+            deleted:
+              type: boolean
+    ModerationQueueResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [pendingRequests, activeDomains]
+          properties:
+            pendingRequests:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/DomainRegistration'
+                  - type: object
+                    properties:
+                      userId:
+                        type: string
+                      userName:
+                        type: [string, 'null']
+                      userEmail:
+                        type: [string, 'null']
+            activeDomains:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Domain'
+                  - type: object
+                    properties:
+                      ownerId:
+                        type: string
+                      userName:
+                        type: [string, 'null']
+                      userEmail:
+                        type: [string, 'null']
+    ModerationActionRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [approve, reject, suspend, unsuspend, delete]
+        registrationId:
+          type: string
+          format: uuid
+        domainId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+    ModerationActionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          additionalProperties: true
     ContactInput:
       type: object
       required: [fullName, email]
@@ -525,10 +1053,7 @@ components:
           type: [string, 'null']
           pattern: '^[A-Za-z]{2}$'
     ContactInfo:
-      allOf:
-        - $ref: '#/components/schemas/ContactInput'
-        - type: object
-          required: [fullName, email]
+      $ref: '#/components/schemas/ContactInput'
     ContactResponse:
       type: object
       required: [data]

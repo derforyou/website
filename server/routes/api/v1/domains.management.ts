@@ -4,12 +4,12 @@ import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { ZONE_NAME } from "../../../../server/lib/domain-policy";
 import type { RuntimeEnv } from "../../../../server/lib/env";
 import {
-    authenticateSession,
+    authenticateApiUser,
     createApiDatabase,
     jsonResponse,
     methodNotAllowed,
     problem,
-    unauthorizedSession,
+    unauthorizedApiUser,
 } from "../../../../server/services/api-auth";
 import {
     createManagedDnsRecord,
@@ -137,10 +137,10 @@ async function ownedDomain(request: Request, context: ApiRouteArgs["context"], d
   const env = context.cloudflare.env as RuntimeEnv;
   const db = createApiDatabase(env);
   if (!db) return { response: problem(503, "Service Unavailable", "The database is not configured.") } as const;
-  const session = await authenticateSession(request, env);
-  if (!session) return { response: unauthorizedSession() } as const;
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return { response: unauthorizedApiUser() } as const;
   const [domain] = await db.select().from(schema.domain)
-    .where(and(eq(schema.domain.id, domainId), eq(schema.domain.ownerId, session.user.id)))
+    .where(and(eq(schema.domain.id, domainId), eq(schema.domain.ownerId, identity.user.id)))
     .limit(1);
   if (!domain) return { response: problem(404, "Not Found", "The domain could not be found.") } as const;
   return { env, db, domain } as const;

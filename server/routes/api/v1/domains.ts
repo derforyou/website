@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
+import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { getReservedNames, normalizeSubdomain, validateSubdomainRequest } from "../../../../server/lib/domain-policy";
 import type { RuntimeEnv } from "../../../../server/lib/env";
-import type { ApiRouteArgs } from "../../../../server/lib/api-route";
-import { authenticateSession, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
+import { authenticateApiUser, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedApiUser } from "../../../../server/services/api-auth";
 
 function parseNameservers(value: unknown): string[] | null {
   if (value == null || value === "") return [];
@@ -26,8 +26,8 @@ export async function loader({ request, context }: ApiRouteArgs) {
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
-  const session = await authenticateSession(request, env);
-  if (!session) return unauthorizedSession();
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return unauthorizedApiUser();
 
   const [domains, registrations] = await Promise.all([
     db.select({
@@ -39,7 +39,7 @@ export async function loader({ request, context }: ApiRouteArgs) {
       dnsSyncStatus: schema.domain.dnsSyncStatus,
       createdAt: schema.domain.createdAt,
     }).from(schema.domain)
-      .where(eq(schema.domain.ownerId, session.user.id))
+      .where(eq(schema.domain.ownerId, identity.user.id))
       .orderBy(schema.domain.createdAt),
     db.select({
       id: schema.domainRegistration.id,
@@ -52,7 +52,7 @@ export async function loader({ request, context }: ApiRouteArgs) {
       decisionAt: schema.domainRegistration.decisionAt,
       createdAt: schema.domainRegistration.createdAt,
     }).from(schema.domainRegistration)
-      .where(eq(schema.domainRegistration.userId, session.user.id))
+      .where(eq(schema.domainRegistration.userId, identity.user.id))
       .orderBy(schema.domainRegistration.createdAt),
   ]);
 
@@ -66,8 +66,8 @@ export async function action({ request, context }: ApiRouteArgs) {
   const db = createApiDatabase(env);
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
-  const session = await authenticateSession(request, env);
-  if (!session) return unauthorizedSession();
+  const identity = await authenticateApiUser(request, env, db);
+  if (!identity) return unauthorizedApiUser();
 
   const payload = await request.json().catch(() => null);
   if (!payload || typeof payload !== "object") {
@@ -115,7 +115,7 @@ export async function action({ request, context }: ApiRouteArgs) {
   const [created] = await db.insert(schema.domainRegistration)
     .values({
       id,
-      userId: session.user.id,
+      userId: identity.user.id,
       subdomain: validation.normalized,
       hostname: validation.hostname,
       status: "pending",

@@ -105,6 +105,30 @@ export async function authenticateBearer(request: Request, db: ApiDatabase) {
   return user ? { key, user } : null;
 }
 
+export async function authenticateApiUser(request: Request, env: RuntimeEnv, db: ApiDatabase) {
+  if (request.headers.has("Authorization")) {
+    const identity = await authenticateBearer(request, db);
+    return identity ? { user: identity.user } : null;
+  }
+
+  const session = await authenticateSession(request, env);
+  return session?.user
+    ? {
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+        },
+      }
+    : null;
+}
+
+export function unauthorizedApiUser() {
+  return problem(401, "Unauthorized", "A valid Bearer API key or Better Auth session is required.", {
+    "WWW-Authenticate": 'Bearer realm="DERforyou API"',
+  });
+}
+
 export function unauthorizedBearer() {
   return problem(401, "Unauthorized", "A valid Bearer API key is required.", {
     "WWW-Authenticate": 'Bearer realm="DERforyou API", error="invalid_token"',
