@@ -8,9 +8,10 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertTriangle, Globe2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Globe2 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 type AvailabilityState = {
     state: "idle" | "checking" | "available" | "unavailable";
@@ -23,8 +24,6 @@ export default function RegisterDomainPage() {
     const [dnsMode, setDnsMode] = useState<"managed" | "custom">("managed");
     const [customNameservers, setCustomNameservers] = useState("");
     const [availability, setAvailability] = useState<AvailabilityState>({ state: "idle", message: "" });
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
     const [pending, setPending] = useState(false);
 
     const nameserverList = useMemo(() =>
@@ -71,25 +70,22 @@ export default function RegisterDomainPage() {
 
     async function submitRegistration(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError("");
-        setSuccess("");
-
         const normalizedSubdomain = subdomain.trim().toLowerCase();
         if (!normalizedSubdomain) {
-            setError("Choose a subdomain name first.");
+            toast.error("Choose a subdomain name first.");
             return;
         }
 
         if (dnsMode === "custom") {
             const nameserverCount = nameserverList.length;
             if (nameserverCount < 2 || nameserverCount > 4) {
-                setError("Custom nameservers require between 2 and 4 valid hostnames.");
+                toast.error("Custom nameservers require between 2 and 4 valid hostnames.");
                 return;
             }
         }
 
         if (availability.state !== "available") {
-            setError("This hostname is not currently available or it is reserved.");
+            toast.error("This hostname is not currently available or it is reserved.");
             return;
         }
 
@@ -107,13 +103,13 @@ export default function RegisterDomainPage() {
             });
             const result = await response.json() as { data?: { hostname?: string; status?: string; detail?: string }; detail?: string };
             if (!response.ok) throw new Error(result.detail ?? "The registration request could not be created.");
-            setSuccess(`${result.data?.hostname ?? normalizedSubdomain + ".der.my.id"} has been submitted and is pending administrator approval.`);
+            toast.success(`${result.data?.hostname ?? normalizedSubdomain + ".der.my.id"} has been submitted for administrator approval.`);
             setSubdomain("");
             setNotes("");
             setCustomNameservers("");
             setAvailability({ state: "idle", message: "" });
         } catch (submitError) {
-            setError(submitError instanceof Error ? submitError.message : "Unable to create the registration request.");
+            toast.error(submitError instanceof Error ? submitError.message : "Unable to create the registration request.");
         } finally {
             setPending(false);
         }
@@ -192,19 +188,6 @@ export default function RegisterDomainPage() {
                         <Alert variant={availability.state === "available" ? "default" : "destructive"} className={availability.state === "available" ? "border-emerald-500/40 bg-emerald-500/5" : ""}>
                             <AlertTriangle className={availability.state === "available" ? "text-emerald-600" : ""} />
                             <AlertDescription>{availability.message}</AlertDescription>
-                        </Alert>
-                    )}
-
-                    {error && (
-                        <Alert variant="destructive">
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    )}
-
-                    {success && (
-                        <Alert className="border-emerald-500/40 bg-emerald-500/5">
-                            <ShieldCheck className="text-emerald-600" />
-                            <AlertDescription>{success}</AlertDescription>
                         </Alert>
                     )}
 

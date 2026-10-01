@@ -1,8 +1,8 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Globe2, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 type DomainRecord = {
     id: string;
@@ -39,8 +39,6 @@ async function loadDomainData() {
 export default function DomainsPage() {
     const [domains, setDomains] = useState<DomainRecord[]>([]);
     const [registrations, setRegistrations] = useState<RegistrationRecord[]>([]);
-    const [error, setError] = useState("");
-
     useEffect(() => {
         void loadDomainData()
             .then(({ domains: nextDomains, registrations: nextRegistrations }) => {
@@ -48,7 +46,7 @@ export default function DomainsPage() {
                 setRegistrations(nextRegistrations);
             })
             .catch((loadError: unknown) => {
-                setError(loadError instanceof Error ? loadError.message : "Unable to load domain data.");
+                toast.error(loadError instanceof Error ? loadError.message : "Unable to load domain data.");
             });
     }, []);
 
@@ -76,12 +74,6 @@ export default function DomainsPage() {
                     </Button>
                 </div>
             </header>
-
-            {error && (
-                <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
 
             <section className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
