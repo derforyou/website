@@ -1,10 +1,10 @@
 import { relations, sql } from "drizzle-orm";
 import {
-  check,
-  index,
-  integer,
-  sqliteTable,
-  text,
+    check,
+    index,
+    integer,
+    sqliteTable,
+    text,
 } from "drizzle-orm/sqlite-core";
 
 const timestamp = (name: string) => integer(name, { mode: "timestamp_ms" });
@@ -87,6 +87,13 @@ export const verification = sqliteTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
+
+export const authOtpThrottle = sqliteTable("authOtpThrottle", {
+  email: text("email").primaryKey(),
+  sentCount: integer("sentCount").notNull(),
+  lastSentAt: integer("lastSentAt").notNull(),
+  nextAllowedAt: integer("nextAllowedAt").notNull(),
+});
 
 export const twoFactor = sqliteTable(
   "twoFactor",

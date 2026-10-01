@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { rememberOtpRequest } from "@/lib/auth-otp-session";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GitBranch, LockKeyhole, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
@@ -25,13 +26,14 @@ export default function SignInPage() {
         setPending(true);
         try {
             const result = await authClient.emailOtp.sendVerificationOtp({
-                email,
+                email: email.trim(),
                 type: "sign-in",
             });
             if (result.error) {
                 toast.error(result.error.message ?? "Unable to send the verification code.");
                 return;
             }
+            rememberOtpRequest(email);
             toast.success("Verification code sent.");
             navigate("/auth/verify?flow=signin");
         } catch {

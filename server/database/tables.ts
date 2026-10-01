@@ -6,6 +6,7 @@ export type Tables = {
   session: Kyselify<typeof schema.session>;
   account: Kyselify<typeof schema.account>;
   verification: Kyselify<typeof schema.verification>;
+  authOtpThrottle: Kyselify<typeof schema.authOtpThrottle>;
   twoFactor: Kyselify<typeof schema.twoFactor>;
   contact: Kyselify<typeof schema.contact>;
   domain: Kyselify<typeof schema.domain>;

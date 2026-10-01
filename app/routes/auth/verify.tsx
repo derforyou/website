@@ -7,9 +7,22 @@ import {
     FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
+import {
+    clearOtpSession,
+    readOtpSession,
+    rememberOtpResend,
+    rememberOtpRetry,
+    SIGNUP_NAME_KEY,
+} from "@/lib/auth-otp-session";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { CheckCircle2, KeyRound, ShieldCheck } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
@@ -20,6 +33,28 @@ export default function VerifyPage() {
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState("");
     const [pending, setPending] = useState(false);
+    const [resending, setResending] = useState(false);
+    const [emailRestored, setEmailRestored] = useState(false);
+    const [resendAt, setResendAt] = useState(0);
+    const [now, setNow] = useState(Date.now());
+
+    useEffect(() => {
+        const pendingOtp = readOtpSession();
+        if (!pendingOtp) return;
+
+        setEmail(pendingOtp.email);
+        setEmailRestored(true);
+        setResendAt(pendingOtp.resendAt);
+    }, []);
+
+    useEffect(() => {
+        if (!resendAt) return;
+
+        const timer = window.setInterval(() => setNow(Date.now()), 1000);
+        return () => window.clearInterval(timer);
+    }, [resendAt]);
+
+    const resendSeconds = Math.max(0, Math.ceil((resendAt - now) / 1000));
 
     async function verifyCode(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -28,19 +63,46 @@ export default function VerifyPage() {
             const result = await authClient.signIn.emailOtp({
                 email,
                 otp,
-                ...(isSignUp ? { name: sessionStorage.getItem("der:auth-signup-name") ?? undefined } : {}),
+                ...(isSignUp ? { name: sessionStorage.getItem(SIGNUP_NAME_KEY) ?? undefined } : {}),
             });
             if (result.error) {
                 toast.error(result.error.message ?? "The verification code could not be accepted.");
                 return;
             }
-            sessionStorage.removeItem("der:auth-signup-name");
+            clearOtpSession();
             toast.success(isSignUp ? "Account created successfully." : "Signed in successfully.");
             navigate("/dashboard");
         } catch {
             toast.error("The verification code could not be accepted. Please try again.");
         } finally {
             setPending(false);
+        }
+    }
+
+    async function resendCode() {
+        if (!email || resendSeconds > 0) return;
+
+        setResending(true);
+        try {
+            const result = await authClient.emailOtp.sendVerificationOtp({
+                email,
+                type: "sign-in",
+            });
+            if (result.error) {
+                const retryAt = rememberOtpRetry(result.error.message ?? "");
+                if (retryAt) setResendAt(retryAt);
+                toast.error(result.error.message ?? "Unable to resend the verification code.");
+                return;
+            }
+
+            const nextResendAt = rememberOtpResend(email);
+            setResendAt(nextResendAt);
+            setOtp("");
+            toast.success("A new verification code was sent.");
+        } catch {
+            toast.error("Unable to resend the verification code. Please try again.");
+        } finally {
+            setResending(false);
         }
     }
 
@@ -56,17 +118,29 @@ export default function VerifyPage() {
                         <FieldGroup>
                             <Field>
                                 <FieldLabel htmlFor="email">Email address</FieldLabel>
-                                <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                                <Input id="email" type="email" autoComplete="email" placeholder="name@example.com" value={email} onChange={(event) => setEmail(event.target.value)} readOnly={emailRestored} required />
                             </Field>
                             <Field>
                                 <FieldLabel htmlFor="otp">Verification code</FieldLabel>
-                                <Input id="otp" inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit code" value={otp} onChange={(event) => setOtp(event.target.value)} minLength={6} maxLength={6} required />
+                                <InputOTP id="otp" maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={otp} onChange={setOtp} autoComplete="one-time-code" aria-label="6-digit verification code" disabled={pending}>
+                                    <InputOTPGroup>
+                                        <InputOTPSlot index={0} />
+                                        <InputOTPSlot index={1} />
+                                        <InputOTPSlot index={2} />
+                                        <InputOTPSlot index={3} />
+                                        <InputOTPSlot index={4} />
+                                        <InputOTPSlot index={5} />
+                                    </InputOTPGroup>
+                                </InputOTP>
                                 <FieldDescription>Codes expire five minutes after they are issued.</FieldDescription>
                             </Field>
                         </FieldGroup>
 
-                        <Button className="w-full" type="submit" disabled={pending}>
+                        <Button className="w-full" type="submit" disabled={pending || otp.length !== 6}>
                             {pending ? "Verifying..." : "Verify and continue"}
+                        </Button>
+                        <Button className="w-full" type="button" variant="outline" onClick={resendCode} disabled={pending || resending || !email || resendSeconds > 0}>
+                            {resending ? "Sending code..." : resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : "Resend verification code"}
                         </Button>
                     </form>
 

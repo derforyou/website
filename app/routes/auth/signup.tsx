@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { rememberOtpRequest, SIGNUP_NAME_KEY } from "@/lib/auth-otp-session";
 import { ArrowRight, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
@@ -24,14 +25,15 @@ export default function SignUpPage() {
         setPending(true);
         try {
             const result = await authClient.emailOtp.sendVerificationOtp({
-                email,
+                email: email.trim(),
                 type: "sign-in",
             });
             if (result.error) {
                 toast.error(result.error.message ?? "Unable to send the verification code.");
                 return;
             }
-            sessionStorage.setItem("der:auth-signup-name", name.trim());
+            sessionStorage.setItem(SIGNUP_NAME_KEY, name.trim());
+            rememberOtpRequest(email);
             toast.success("Verification code sent.");
             navigate("/auth/verify?flow=signup");
         } catch {
