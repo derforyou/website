@@ -1,8 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
 import { isAdminEmail } from "../../../../server/lib/admin";
-import type { RuntimeEnv } from "../../../../server/lib/env";
 import type { ApiRouteArgs } from "../../../../server/lib/api-route";
+import type { RuntimeEnv } from "../../../../server/lib/env";
 import { authenticateSession, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
 
 export async function loader({ request, context }: ApiRouteArgs) {
@@ -188,14 +188,20 @@ export async function action({ request, context }: ApiRouteArgs) {
     });
   }
 
-  if (actionName === "suspend") {
+  if (actionName === "suspend" || actionName === "unsuspend") {
     if (!domainId) return problem(400, "Bad Request", "A domain id is required.");
 
+    const [domain] = await db.select({ id: schema.domain.id })
+      .from(schema.domain)
+      .where(eq(schema.domain.id, domainId));
+    if (!domain) return problem(404, "Not Found", "The domain could not be found.");
+
+    const status = actionName === "suspend" ? "suspended" : "active";
     await db.update(schema.domain)
-      .set({ status: "suspended", updatedAt: new Date() })
+      .set({ status, updatedAt: new Date() })
       .where(eq(schema.domain.id, domainId));
 
-    return jsonResponse({ data: { domainId, status: "suspended" } });
+    return jsonResponse({ data: { domainId, status } });
   }
 
   if (actionName === "delete") {

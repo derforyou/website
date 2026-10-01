@@ -41,6 +41,11 @@ type Pages = {
   "/dashboard/domains/moderation": {
     params: {};
   };
+  "/dashboard/domains/:domainId": {
+    params: {
+      "domainId": string;
+    };
+  };
   "/dashboard/settings": {
     params: {};
   };
@@ -67,7 +72,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/auth/signin" | "/auth/signup" | "/auth/verify";
+    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/domains/:domainId" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/auth/signin" | "/auth/signup" | "/auth/verify";
   };
   "routes/publicLayout.tsx": {
     id: "routes/publicLayout";
@@ -99,7 +104,7 @@ type RouteFiles = {
   };
   "routes/dashboard/layout.tsx": {
     id: "routes/dashboard/layout";
-    page: "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys";
+    page: "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/domains/:domainId" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys";
   };
   "routes/dashboard/index.tsx": {
     id: "routes/dashboard/index";
@@ -116,6 +121,10 @@ type RouteFiles = {
   "routes/dashboard/domains/moderation.tsx": {
     id: "routes/dashboard/domains/moderation";
     page: "/dashboard/domains/moderation";
+  };
+  "routes/dashboard/domains/manage.tsx": {
+    id: "routes/dashboard/domains/manage";
+    page: "/dashboard/domains/:domainId";
   };
   "routes/dashboard/settings/index.tsx": {
     id: "routes/dashboard/settings/index";
@@ -165,6 +174,7 @@ type RouteModules = {
   "routes/dashboard/domains/index": typeof import("./app/routes/dashboard/domains/index.tsx");
   "routes/dashboard/domains/register": typeof import("./app/routes/dashboard/domains/register.tsx");
   "routes/dashboard/domains/moderation": typeof import("./app/routes/dashboard/domains/moderation.tsx");
+  "routes/dashboard/domains/manage": typeof import("./app/routes/dashboard/domains/manage.tsx");
   "routes/dashboard/settings/index": typeof import("./app/routes/dashboard/settings/index.tsx");
   "routes/dashboard/settings/account": typeof import("./app/routes/dashboard/settings/account.tsx");
   "routes/dashboard/settings/contact": typeof import("./app/routes/dashboard/settings/contact.tsx");

@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertTriangle, Globe2 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { AlertTriangle, Globe2, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
@@ -22,15 +22,14 @@ export default function RegisterDomainPage() {
     const [subdomain, setSubdomain] = useState("");
     const [notes, setNotes] = useState("");
     const [dnsMode, setDnsMode] = useState<"managed" | "custom">("managed");
-    const [customNameservers, setCustomNameservers] = useState("");
+    const [customNameservers, setCustomNameservers] = useState(["", ""]);
     const [availability, setAvailability] = useState<AvailabilityState>({ state: "idle", message: "" });
     const [pending, setPending] = useState(false);
 
-    const nameserverList = useMemo(() =>
-        customNameservers
-            .split(",")
-            .map((item) => item.trim().toLowerCase())
-            .filter(Boolean), [customNameservers]);
+    const nameserverList = customNameservers.map((item) => item.trim().toLowerCase());
+    const validNameservers = nameserverList.every((item) =>
+        /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/.test(item) && !item.includes(","),
+    ) && new Set(nameserverList).size === nameserverList.length;
 
     useEffect(() => {
         const value = subdomain.trim().toLowerCase();
@@ -77,9 +76,8 @@ export default function RegisterDomainPage() {
         }
 
         if (dnsMode === "custom") {
-            const nameserverCount = nameserverList.length;
-            if (nameserverCount < 2 || nameserverCount > 4) {
-                toast.error("Custom nameservers require between 2 and 4 valid hostnames.");
+            if (nameserverList.length < 2 || nameserverList.length > 5 || !validNameservers) {
+                toast.error("Enter 2 to 5 unique, valid nameserver hostnames.");
                 return;
             }
         }
@@ -98,7 +96,7 @@ export default function RegisterDomainPage() {
                     subdomain: normalizedSubdomain,
                     notes,
                     dnsMode,
-                    customNameservers: dnsMode === "custom" ? nameserverList.join(",") : "",
+                    customNameservers: dnsMode === "custom" ? nameserverList : [],
                 }),
             });
             const result = await response.json() as { data?: { hostname?: string; status?: string; detail?: string }; detail?: string };
@@ -106,7 +104,7 @@ export default function RegisterDomainPage() {
             toast.success(`${result.data?.hostname ?? normalizedSubdomain + ".der.my.id"} has been submitted for administrator approval.`);
             setSubdomain("");
             setNotes("");
-            setCustomNameservers("");
+            setCustomNameservers(["", ""]);
             setAvailability({ state: "idle", message: "" });
         } catch (submitError) {
             toast.error(submitError instanceof Error ? submitError.message : "Unable to create the registration request.");
@@ -115,7 +113,7 @@ export default function RegisterDomainPage() {
         }
     }
 
-    const canSubmit = subdomain.trim() && availability.state === "available" && !pending && (dnsMode !== "custom" || nameserverList.length >= 2);
+    const canSubmit = subdomain.trim() && availability.state === "available" && !pending && (dnsMode !== "custom" || (nameserverList.length >= 2 && validNameservers));
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
@@ -153,21 +151,38 @@ export default function RegisterDomainPage() {
                             <FieldDescription>
                                 {dnsMode === "managed"
                                     ? "We will prepare the DNS records only after the hostname is approved."
-                                    : "Add 2-4 nameservers to be stored for moderation and later configuration review."}
+                                    : "Enter 2-5 nameservers. They will be stored for review and configuration."}
                             </FieldDescription>
                         </Field>
 
                         {dnsMode === "custom" && (
                             <Field>
-                                <FieldLabel htmlFor="custom-nameservers">Custom nameservers</FieldLabel>
-                                <Input
-                                    id="custom-nameservers"
-                                    value={customNameservers}
-                                    onChange={(event) => setCustomNameservers(event.target.value)}
-                                    placeholder="ns1.example.com, ns2.example.com"
-                                    autoComplete="off"
-                                />
-                                <FieldDescription>Provide 2 to 4 valid nameserver hostnames separated by commas.</FieldDescription>
+                                <FieldLabel>Custom nameservers</FieldLabel>
+                                <div className="flex flex-col gap-2">
+                                    {customNameservers.map((nameserver, index) => (
+                                        <div key={index} className="flex items-center gap-2">
+                                            <Input
+                                                aria-label={`Nameserver ${index + 1}`}
+                                                value={nameserver}
+                                                onChange={(event) => setCustomNameservers((current) => current.map((value, itemIndex) => itemIndex === index ? event.target.value : value))}
+                                                placeholder={`ns${index + 1}.example.com`}
+                                                autoComplete="off"
+                                            />
+                                            {index >= 2 && (
+                                                <Button type="button" variant="outline" size="icon" aria-label={`Remove nameserver ${index + 1}`} onClick={() => setCustomNameservers((current) => current.filter((_, itemIndex) => itemIndex !== index))}>
+                                                    <Trash2 />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                {customNameservers.length < 5 && (
+                                    <Button type="button" variant="outline" size="sm" onClick={() => setCustomNameservers((current) => [...current, ""])}>
+                                        <Plus data-icon="inline-start" />
+                                        Add NS
+                                    </Button>
+                                )}
+                                <FieldDescription>Enter 2 to 5 unique nameserver hostnames, one per input.</FieldDescription>
                             </Field>
                         )}
 

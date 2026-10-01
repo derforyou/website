@@ -4,6 +4,7 @@ import * as apiKeys from "../server/routes/api/v1/api-keys";
 import * as apiKey from "../server/routes/api/v1/api-keys.$keyId";
 import * as domains from "../server/routes/api/v1/domains";
 import * as domainAvailability from "../server/routes/api/v1/domains.availability";
+import * as domainManagement from "../server/routes/api/v1/domains.management";
 import * as domainModeration from "../server/routes/api/v1/domains.moderation";
 import * as me from "../server/routes/api/v1/me";
 import * as contact from "../server/routes/api/v1/settings.contact";
@@ -20,6 +21,9 @@ const apiRoutes: Record<string, ApiRoute> = {
   "/me": { loader: me.loader, allow: "GET" },
   "/settings/contact": { loader: contact.loader, action: contact.action, allow: "GET, PUT" },
   "/domains": { loader: domains.loader, action: domains.action, allow: "GET, POST" },
+  "/domains/:domainId": { loader: domainManagement.loader, action: domainManagement.action, allow: "GET, PATCH" },
+  "/domains/:domainId/dns-records": { loader: domainManagement.loader, action: domainManagement.action, allow: "GET, POST" },
+  "/domains/:domainId/dns-records/:recordId": { loader: domainManagement.loader, action: domainManagement.action, allow: "GET, PUT, DELETE" },
   "/domains/availability": { loader: domainAvailability.loader, allow: "GET" },
   "/domains/moderation": { loader: domainModeration.loader, action: domainModeration.action, allow: "GET, POST" },
   "/api-keys": { loader: apiKeys.loader, action: apiKeys.action, allow: "GET, POST" },
@@ -31,8 +35,29 @@ async function handleApiRequest(request: Request, env: RuntimeEnv, pathname: str
   let params: Record<string, string> = {};
 
   if (!apiRoutes[routePath]) {
+    const domainRecordMatch = routePath.match(/^\/domains\/([^/]+)\/dns-records(?:\/([^/]+))?$/);
+    const domainMatch = routePath.match(/^\/domains\/([^/]+)$/);
     const keyMatch = routePath.match(/^\/api-keys\/([^/]+)$/);
-    if (keyMatch) {
+    if (domainRecordMatch) {
+      try {
+        params = {
+          domainId: decodeURIComponent(domainRecordMatch[1]),
+          ...(domainRecordMatch[2] ? { recordId: decodeURIComponent(domainRecordMatch[2]) } : {}),
+        };
+        routePath = domainRecordMatch[2]
+          ? "/domains/:domainId/dns-records/:recordId"
+          : "/domains/:domainId/dns-records";
+      } catch {
+        return problem(400, "Bad Request", "The DNS record id is malformed.");
+      }
+    } else if (domainMatch) {
+      try {
+        params = { domainId: decodeURIComponent(domainMatch[1]) };
+        routePath = "/domains/:domainId";
+      } catch {
+        return problem(400, "Bad Request", "The domain id is malformed.");
+      }
+    } else if (keyMatch) {
       try {
         params = { keyId: decodeURIComponent(keyMatch[1]) };
         routePath = "/api-keys/:keyId";

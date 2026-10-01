@@ -5,15 +5,19 @@ import type { RuntimeEnv } from "../../../../server/lib/env";
 import type { ApiRouteArgs } from "../../../../server/lib/api-route";
 import { authenticateSession, createApiDatabase, jsonResponse, methodNotAllowed, problem, unauthorizedSession } from "../../../../server/services/api-auth";
 
-function parseNameservers(value: string | null | undefined) {
-  if (!value) return [];
+function parseNameservers(value: unknown): string[] | null {
+  if (value == null || value === "") return [];
+  const entries = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? value.split(",")
+      : null;
+  if (!entries || entries.some((entry) => typeof entry !== "string")) return null;
 
-  return value
-    .split(",")
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean)
-    .filter((entry, index, entries) => entries.indexOf(entry) === index)
-    .filter((entry) => /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i.test(entry));
+  const nameservers = (entries as string[]).map((entry) => entry.trim().toLowerCase());
+  if (nameservers.some((entry) => !entry || entry.includes(",") || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i.test(entry))) return null;
+  if (new Set(nameservers).size !== nameservers.length) return null;
+  return nameservers;
 }
 
 export async function loader({ request, context }: ApiRouteArgs) {
@@ -76,13 +80,14 @@ export async function action({ request, context }: ApiRouteArgs) {
   const subdomain = normalizeSubdomain(rawSubdomain);
   const dnsMode = (payload as Record<string, unknown>).dnsMode === "custom" ? "custom" : "managed";
   const notes = typeof (payload as Record<string, unknown>).notes === "string" ? (payload as Record<string, unknown>).notes as string : "";
-  const rawNameservers = typeof (payload as Record<string, unknown>).customNameservers === "string"
-    ? (payload as Record<string, unknown>).customNameservers as string
-    : "";
+  const rawNameservers = (payload as Record<string, unknown>).customNameservers;
   const nameservers = parseNameservers(rawNameservers);
 
-  if (dnsMode === "custom" && (nameservers.length < 2 || nameservers.length > 4)) {
-    return problem(400, "Bad Request", "Custom nameservers require between 2 and 4 valid hostnames.");
+  if (!nameservers) {
+    return problem(400, "Bad Request", "Nameservers must be unique valid hostnames.");
+  }
+  if (dnsMode === "custom" && (nameservers.length < 2 || nameservers.length > 5)) {
+    return problem(400, "Bad Request", "Custom nameservers require between 2 and 5 valid hostnames.");
   }
 
   const reserved = await getReservedNames(env);
@@ -115,7 +120,7 @@ export async function action({ request, context }: ApiRouteArgs) {
       hostname: validation.hostname,
       status: "pending",
       dnsMode,
-      customNameservers: nameservers.length ? nameservers.join(",") : null,
+      customNameservers: nameservers.length ? JSON.stringify(nameservers) : null,
       notes: notes.trim() || null,
       createdAt,
       updatedAt: createdAt,

@@ -1,5 +1,7 @@
+import { DomainStatusBadge } from "@/components/domain-status-badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { redirect } from "react-router";
 import { toast } from "sonner";
@@ -40,6 +42,17 @@ type ActiveDomain = {
   userName: string | null;
   userEmail: string | null;
 };
+
+function nameserverList(value: string | null) {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.filter((entry): entry is string => typeof entry === "string");
+  } catch {
+    // Older rows stored comma-separated nameservers.
+  }
+  return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+}
 
 export default function DomainModerationPage() {
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
@@ -85,7 +98,7 @@ export default function DomainModerationPage() {
     }
   }
 
-  async function handleDomainAction(domainId: string, action: "suspend" | "delete", currentStatus?: "active" | "suspended") {
+  async function handleDomainAction(domainId: string, action: "suspend" | "unsuspend" | "delete") {
     try {
       const response = await fetch("/api/v1/domains/moderation", {
         method: "POST",
@@ -97,7 +110,7 @@ export default function DomainModerationPage() {
       await loadModeration();
       const successMessage = action === "delete"
         ? "Domain deleted."
-        : currentStatus === "suspended"
+        : action === "unsuspend"
           ? "Domain unsuspended."
           : "Domain suspended.";
       toast.success(successMessage);
@@ -127,50 +140,82 @@ export default function DomainModerationPage() {
         <h2 className="text-lg font-medium">Pending registrations</h2>
         {pendingRequests.length === 0 ? (
           <p className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">No pending registrations.</p>
-        ) : pendingRequests.map((request) => (
-          <div key={request.id} className="rounded-lg border bg-card p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="font-medium">{request.hostname}</div>
-                <div className="text-sm text-muted-foreground">{request.userEmail ?? request.userName ?? "Applicant"}</div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" onClick={() => void handleModeration(request.id, "approve")}>Approve</Button>
-                <Button type="button" size="sm" variant="outline" onClick={() => void handleModeration(request.id, "reject", "Rejected by moderator.")}>Reject</Button>
-              </div>
-            </div>
-            <div className="mt-3 text-sm text-muted-foreground">
-              DNS: {request.dnsMode === "managed" ? "Managed" : "Custom"}
-              {request.customNameservers && ` · Nameservers: ${request.customNameservers}`}
-              {request.notes && ` · Purpose: ${request.notes}`}
-            </div>
-          </div>
-        ))}
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Hostname</TableHead>
+                <TableHead>Applicant</TableHead>
+                <TableHead>DNS mode</TableHead>
+                <TableHead>Purpose</TableHead>
+                <TableHead>Requested</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pendingRequests.map((request) => (
+                <TableRow key={request.id}>
+                  <TableCell className="font-medium">{request.hostname}</TableCell>
+                  <TableCell>{request.userEmail ?? request.userName ?? "Applicant"}</TableCell>
+                  <TableCell>
+                    <DomainStatusBadge status={request.dnsMode} />
+                    {request.customNameservers && <div className="mt-1 max-w-xs whitespace-normal break-all text-xs text-muted-foreground">{nameserverList(request.customNameservers).join(", ")}</div>}
+                  </TableCell>
+                  <TableCell className="max-w-sm whitespace-normal">{request.notes ?? "—"}</TableCell>
+                  <TableCell>{new Date(request.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" size="sm" onClick={() => void handleModeration(request.id, "approve")}>Approve</Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => void handleModeration(request.id, "reject", "Rejected by moderator.")}>Reject</Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </section>
 
       <section className="space-y-4">
         <h2 className="text-lg font-medium">Active domains</h2>
         {activeDomains.length === 0 ? (
           <p className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">No domains are active.</p>
-        ) : activeDomains.map((domain) => (
-          <div key={domain.id} className="rounded-lg border bg-card p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="font-medium">{domain.hostname}</div>
-                <div className="text-sm text-muted-foreground">Owner: {domain.userEmail ?? domain.userName ?? "Unknown"}</div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => void handleDomainAction(domain.id, "suspend", domain.status)}>{domain.status === "suspended" ? "Unsuspend" : "Suspend"}</Button>
-                <Button type="button" size="sm" variant="destructive" onClick={() => void handleDomainAction(domain.id, "delete")}>Delete</Button>
-              </div>
-            </div>
-            <div className="mt-3 text-sm text-muted-foreground">
-              DNS: {domain.dnsMode === "managed" ? "Managed" : "Custom"}
-              {domain.customNameservers && ` · Nameservers: ${domain.customNameservers}`}
-              {` · Status: ${domain.status}`}
-            </div>
-          </div>
-        ))}
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Hostname</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>DNS mode</TableHead>
+                <TableHead>Sync</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {activeDomains.map((domain) => (
+                <TableRow key={domain.id}>
+                  <TableCell className="font-medium">{domain.hostname}</TableCell>
+                  <TableCell>{domain.userEmail ?? domain.userName ?? "Unknown"}</TableCell>
+                  <TableCell><DomainStatusBadge status={domain.status} /></TableCell>
+                  <TableCell>
+                    <DomainStatusBadge status={domain.dnsMode} />
+                    {domain.customNameservers && <div className="mt-1 max-w-xs whitespace-normal break-all text-xs text-muted-foreground">{nameserverList(domain.customNameservers).join(", ")}</div>}
+                  </TableCell>
+                  <TableCell><DomainStatusBadge status={domain.dnsSyncStatus} /></TableCell>
+                  <TableCell>{new Date(domain.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" size="sm" variant="outline" onClick={() => void handleDomainAction(domain.id, domain.status === "suspended" ? "unsuspend" : "suspend")}>{domain.status === "suspended" ? "Unsuspend" : "Suspend"}</Button>
+                      <Button type="button" size="sm" variant="destructive" onClick={() => void handleDomainAction(domain.id, "delete")}>Delete</Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </section>
     </div>
   );
