@@ -9,7 +9,7 @@ import {
   Scripts,
 } from "react-router";
 import Footer from "./components/base/Footer";
-import tailwind from "./tailwind.css?url";
+import globalCss from "./global.css?url";
 import { initializeTheme } from "./utils/theme";
 
 export const links: LinksFunction = () => {
@@ -19,7 +19,7 @@ export const links: LinksFunction = () => {
       type: "image/svg+xml",
       href: "/logo_dark.ico",
     },
-    ...(tailwind ? [{ rel: "stylesheet", href: tailwind }] : []),
+    ...(globalCss ? [{ rel: "stylesheet", href: globalCss }] : []),
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     {
       rel: "preconnect",
@@ -28,7 +28,7 @@ export const links: LinksFunction = () => {
     },
     {
       rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Raleway:ital,wght@0,100..900;1,100..900&family=Unbounded:wght@200..900&display=swap",
+      href: "https://fonts.googleapis.com/css2?family=Unbounded:wght@200..900&display=swap",
     },
   ];
 };
@@ -41,14 +41,14 @@ export const meta: MetaFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="theme">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body className="bg-bg">
+      <body>
         <Toaster richColors position="top-right" />
         <div className="overflow-hidden">{children}</div>
         <Footer />

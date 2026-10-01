@@ -19,9 +19,9 @@ export default function Hero() {
         variants={containerVariants}
         className="py-0"
       >
-        <h1 className="text-4xl text-center font-header">React Router & Cloudflare Pages Template</h1>
+        <h1 className="text-center text-4xl font-bold font-header">React Router & Cloudflare Pages Template</h1>
         <div className="pt-8 text-center">
-          <strong className="text-2xl sub-text-1 font-header">With Vite, Drizzle & Kysely</strong>
+          <strong className="text-2xl font-bold sub-text-1 font-header">With Vite, Drizzle & Kysely</strong>
         </div>
         <div className="flex justify-center pt-16">
           <img src="/logo_light.png" alt="" className="h-[8rem]" />
