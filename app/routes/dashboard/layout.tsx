@@ -34,6 +34,7 @@ import {
   Plus,
   Settings2,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, Outlet, redirect, useLocation, useNavigate } from "react-router";
 
 export async function clientLoader() {
@@ -154,12 +155,45 @@ function AppSidebar() {
 export default function MainLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const pageTitle = pageTitles[pathname] ?? "Workspace";
   const sectionTitle = pathname.startsWith("/dashboard/settings")
     ? "Developer"
     : pathname.startsWith("/dashboard/domains")
       ? "Workspace"
       : null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const verifySession = async () => {
+      try {
+        const session = await authClient.getSession();
+        if (cancelled) return;
+
+        if (!session.data) {
+          navigate("/auth/signin", { replace: true });
+          return;
+        }
+
+        setIsCheckingSession(false);
+      } catch {
+        if (!cancelled) {
+          navigate("/auth/signin", { replace: true });
+        }
+      }
+    };
+
+    void verifySession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  if (isCheckingSession) {
+    return null;
+  }
 
   return (
     <SidebarProvider>
