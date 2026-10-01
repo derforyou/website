@@ -1,6 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type PendingRequest = {
   id: string;
@@ -44,30 +45,56 @@ export default function DomainModerationPage() {
 
   useEffect(() => {
     void loadModeration().catch((loadError: unknown) => {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load moderation data.");
+      const message = loadError instanceof Error ? loadError.message : "Unable to load moderation data.";
+      setError(message);
+      toast.error(message);
     });
   }, []);
 
   async function handleModeration(registrationId: string, action: "approve" | "reject" | "delete", reason = "") {
-    const response = await fetch("/api/v1/domains/moderation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, registrationId, reason }),
-    });
-    const result = await response.json() as { data?: { status?: string; domainId?: string; registrationId?: string }; detail?: string };
-    if (!response.ok) throw new Error(result.detail ?? "The moderation action failed.");
-    await loadModeration();
+    try {
+      const response = await fetch("/api/v1/domains/moderation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, registrationId, reason }),
+      });
+      const result = await response.json() as { data?: { status?: string; domainId?: string; registrationId?: string }; detail?: string };
+      if (!response.ok) throw new Error(result.detail ?? "The moderation action failed.");
+      await loadModeration();
+      const successMessage = action === "approve"
+        ? "Registration approved."
+        : action === "reject"
+          ? "Registration rejected."
+          : "Registration removed.";
+      toast.success(successMessage);
+    } catch (moderationError) {
+      const message = moderationError instanceof Error ? moderationError.message : "The moderation action failed.";
+      setError(message);
+      toast.error(message);
+    }
   }
 
-  async function handleDomainAction(domainId: string, action: "suspend" | "delete") {
-    const response = await fetch("/api/v1/domains/moderation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, domainId }),
-    });
-    const result = await response.json() as { data?: { status?: string; domainId?: string }; detail?: string };
-    if (!response.ok) throw new Error(result.detail ?? "The domain action failed.");
-    await loadModeration();
+  async function handleDomainAction(domainId: string, action: "suspend" | "delete", currentStatus?: "active" | "suspended") {
+    try {
+      const response = await fetch("/api/v1/domains/moderation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, domainId }),
+      });
+      const result = await response.json() as { data?: { status?: string; domainId?: string }; detail?: string };
+      if (!response.ok) throw new Error(result.detail ?? "The domain action failed.");
+      await loadModeration();
+      const successMessage = action === "delete"
+        ? "Domain deleted."
+        : currentStatus === "suspended"
+          ? "Domain unsuspended."
+          : "Domain suspended.";
+      toast.success(successMessage);
+    } catch (domainError) {
+      const message = domainError instanceof Error ? domainError.message : "The domain action failed.";
+      setError(message);
+      toast.error(message);
+    }
   }
 
   return (
@@ -122,7 +149,7 @@ export default function DomainModerationPage() {
                 <div className="text-sm text-muted-foreground">Owner: {domain.userEmail ?? domain.userName ?? "Unknown"}</div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => void handleDomainAction(domain.id, "suspend")}>{domain.status === "suspended" ? "Unsuspend" : "Suspend"}</Button>
+                <Button type="button" size="sm" variant="outline" onClick={() => void handleDomainAction(domain.id, "suspend", domain.status)}>{domain.status === "suspended" ? "Unsuspend" : "Suspend"}</Button>
                 <Button type="button" size="sm" variant="destructive" onClick={() => void handleDomainAction(domain.id, "delete")}>Delete</Button>
               </div>
             </div>

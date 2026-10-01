@@ -62,35 +62,12 @@ type Pages = {
   "/auth/verify": {
     params: {};
   };
-  "/api/v1/me": {
-    params: {};
-  };
-  "/api/v1/settings/contact": {
-    params: {};
-  };
-  "/api/v1/domains": {
-    params: {};
-  };
-  "/api/v1/domains/availability": {
-    params: {};
-  };
-  "/api/v1/domains/moderation": {
-    params: {};
-  };
-  "/api/v1/api-keys": {
-    params: {};
-  };
-  "/api/v1/api-keys/:keyId": {
-    params: {
-      "keyId": string;
-    };
-  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/auth/signin" | "/auth/signup" | "/auth/verify" | "/api/v1/me" | "/api/v1/settings/contact" | "/api/v1/domains" | "/api/v1/domains/availability" | "/api/v1/domains/moderation" | "/api/v1/api-keys" | "/api/v1/api-keys/:keyId";
+    page: "/" | "/legal/privacy" | "/legal/terms" | "/legal/acceptable-use" | "/legal/domain-policy" | "/legal/abuse" | "/dashboard" | "/dashboard/domains" | "/dashboard/domains/register" | "/dashboard/domains/moderation" | "/dashboard/settings" | "/dashboard/settings/account" | "/dashboard/settings/contact" | "/dashboard/settings/api-keys" | "/auth/signin" | "/auth/signup" | "/auth/verify";
   };
   "routes/publicLayout.tsx": {
     id: "routes/publicLayout";
@@ -172,34 +149,6 @@ type RouteFiles = {
     id: "routes/auth/verify";
     page: "/auth/verify";
   };
-  "routes/api/v1/me.ts": {
-    id: "routes/api/v1/me";
-    page: "/api/v1/me";
-  };
-  "routes/api/v1/settings.contact.ts": {
-    id: "routes/api/v1/settings.contact";
-    page: "/api/v1/settings/contact";
-  };
-  "routes/api/v1/domains.ts": {
-    id: "routes/api/v1/domains";
-    page: "/api/v1/domains";
-  };
-  "routes/api/v1/domains.availability.ts": {
-    id: "routes/api/v1/domains.availability";
-    page: "/api/v1/domains/availability";
-  };
-  "routes/api/v1/domains.moderation.ts": {
-    id: "routes/api/v1/domains.moderation";
-    page: "/api/v1/domains/moderation";
-  };
-  "routes/api/v1/api-keys.ts": {
-    id: "routes/api/v1/api-keys";
-    page: "/api/v1/api-keys";
-  };
-  "routes/api/v1/api-keys.$keyId.ts": {
-    id: "routes/api/v1/api-keys.$keyId";
-    page: "/api/v1/api-keys/:keyId";
-  };
 };
 
 type RouteModules = {
@@ -224,11 +173,4 @@ type RouteModules = {
   "routes/auth/signin": typeof import("./app/routes/auth/signin.tsx");
   "routes/auth/signup": typeof import("./app/routes/auth/signup.tsx");
   "routes/auth/verify": typeof import("./app/routes/auth/verify.tsx");
-  "routes/api/v1/me": typeof import("./app/routes/api/v1/me.ts");
-  "routes/api/v1/settings.contact": typeof import("./app/routes/api/v1/settings.contact.ts");
-  "routes/api/v1/domains": typeof import("./app/routes/api/v1/domains.ts");
-  "routes/api/v1/domains.availability": typeof import("./app/routes/api/v1/domains.availability.ts");
-  "routes/api/v1/domains.moderation": typeof import("./app/routes/api/v1/domains.moderation.ts");
-  "routes/api/v1/api-keys": typeof import("./app/routes/api/v1/api-keys.ts");
-  "routes/api/v1/api-keys.$keyId": typeof import("./app/routes/api/v1/api-keys.$keyId.ts");
 };

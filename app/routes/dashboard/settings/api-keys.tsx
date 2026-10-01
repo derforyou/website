@@ -4,6 +4,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Copy, KeyRound, Trash2 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { toast } from "sonner";
 
 type ApiKey = {
     id: string;
@@ -37,7 +38,9 @@ export default function ApiKeysPage() {
 
     useEffect(() => {
         fetchApiKeys().then(setKeys).catch((loadError: unknown) => {
-            setError(loadError instanceof Error ? loadError.message : "Could not load API keys.");
+            const message = loadError instanceof Error ? loadError.message : "Could not load API keys.";
+            setError(message);
+            toast.error(message);
         });
     }, []);
 
@@ -60,8 +63,11 @@ export default function ApiKeysPage() {
             setName("");
             setExpiresAt("");
             setKeys(await fetchApiKeys());
+            toast.success("API key created successfully.");
         } catch (createError) {
-            setError(createError instanceof Error ? createError.message : "Could not create API key.");
+            const message = createError instanceof Error ? createError.message : "Could not create API key.";
+            setError(message);
+            toast.error(message);
         } finally {
             setPending(false);
         }
@@ -74,8 +80,11 @@ export default function ApiKeysPage() {
             const result = await response.json() as ApiResult<{ id: string; revoked: boolean }>;
             if (!response.ok) throw new Error(result.detail ?? "Could not revoke API key.");
             setKeys(await fetchApiKeys());
+            toast.success("API key revoked.");
         } catch (revokeError) {
-            setError(revokeError instanceof Error ? revokeError.message : "Could not revoke API key.");
+            const message = revokeError instanceof Error ? revokeError.message : "Could not revoke API key.";
+            setError(message);
+            toast.error(message);
         }
     }
 
@@ -110,7 +119,20 @@ export default function ApiKeysPage() {
                     <AlertDescription className="flex flex-col gap-3">
                         <span>Copy this key now. It will not be shown again.</span>
                         <code className="break-all rounded border bg-muted p-3">{newToken}</code>
-                        <Button type="button" variant="outline" className="w-fit" onClick={() => navigator.clipboard.writeText(newToken)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-fit"
+                            onClick={() => {
+                                void navigator.clipboard.writeText(newToken)
+                                    .then(() => {
+                                        toast.success("API key copied to clipboard.");
+                                    })
+                                    .catch(() => {
+                                        toast.error("Unable to copy the API key.");
+                                    });
+                            }}
+                        >
                             <Copy data-icon="inline-start" />
                             Copy key
                         </Button>
