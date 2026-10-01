@@ -1,12 +1,12 @@
-import type { RuntimeEnv } from "../server/lib/env";
 import type { ApiRouteArgs, ApiRouteHandler } from "../server/lib/api-route";
-import * as apiKeys from "../app/routes/api/v1/api-keys";
-import * as apiKey from "../app/routes/api/v1/api-keys.$keyId";
-import * as domainAvailability from "../app/routes/api/v1/domains.availability";
-import * as domainModeration from "../app/routes/api/v1/domains.moderation";
-import * as domains from "../app/routes/api/v1/domains";
-import * as me from "../app/routes/api/v1/me";
-import * as contact from "../app/routes/api/v1/settings.contact";
+import type { RuntimeEnv } from "../server/lib/env";
+import * as apiKeys from "../server/routes/api/v1/api-keys";
+import * as apiKey from "../server/routes/api/v1/api-keys.$keyId";
+import * as domains from "../server/routes/api/v1/domains";
+import * as domainAvailability from "../server/routes/api/v1/domains.availability";
+import * as domainModeration from "../server/routes/api/v1/domains.moderation";
+import * as me from "../server/routes/api/v1/me";
+import * as contact from "../server/routes/api/v1/settings.contact";
 import { methodNotAllowed, problem } from "../server/services/api-auth";
 import createAuth from "../server/services/auth";
 
