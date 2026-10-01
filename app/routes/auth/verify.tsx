@@ -11,6 +11,7 @@ import { authClient } from "@/lib/auth-client";
 import { CheckCircle2, KeyRound, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import { toast } from "sonner";
 
 export default function VerifyPage() {
     const navigate = useNavigate();
@@ -18,12 +19,10 @@ export default function VerifyPage() {
     const isSignUp = searchParams.get("flow") === "signup";
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState("");
-    const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
     async function verifyCode(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError("");
         setPending(true);
         try {
             const result = await authClient.signIn.emailOtp({
@@ -32,13 +31,14 @@ export default function VerifyPage() {
                 ...(isSignUp ? { name: sessionStorage.getItem("der:auth-signup-name") ?? undefined } : {}),
             });
             if (result.error) {
-                setError(result.error.message ?? "The verification code could not be accepted.");
+                toast.error(result.error.message ?? "The verification code could not be accepted.");
                 return;
             }
             sessionStorage.removeItem("der:auth-signup-name");
+            toast.success(isSignUp ? "Account created successfully." : "Signed in successfully.");
             navigate("/dashboard");
         } catch {
-            setError("The verification code could not be accepted. Please try again.");
+            toast.error("The verification code could not be accepted. Please try again.");
         } finally {
             setPending(false);
         }
@@ -65,7 +65,6 @@ export default function VerifyPage() {
                             </Field>
                         </FieldGroup>
 
-                        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
                         <Button className="w-full" type="submit" disabled={pending}>
                             {pending ? "Verifying..." : "Verify and continue"}
                         </Button>

@@ -13,16 +13,15 @@ import { SiGithub } from "@icons-pack/react-simple-icons";
 import { GitBranch, LockKeyhole, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export default function SignInPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
-    const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
     async function requestCode(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError("");
         setPending(true);
         try {
             const result = await authClient.emailOtp.sendVerificationOtp({
@@ -30,25 +29,31 @@ export default function SignInPage() {
                 type: "sign-in",
             });
             if (result.error) {
-                setError(result.error.message ?? "Unable to send the verification code.");
+                toast.error(result.error.message ?? "Unable to send the verification code.");
                 return;
             }
+            toast.success("Verification code sent.");
             navigate("/auth/verify?flow=signin");
         } catch {
-            setError("Unable to send the verification code. Please try again.");
+            toast.error("Unable to send the verification code. Please try again.");
         } finally {
             setPending(false);
         }
     }
 
     async function signInWithGitHub() {
-        setError("");
-        const result = await authClient.signIn.social({
-            provider: "github",
-            callbackURL: "/dashboard",
-        });
-        if (result.error) {
-            setError(result.error.message ?? "GitHub sign-in is unavailable.");
+        try {
+            const result = await authClient.signIn.social({
+                provider: "github",
+                callbackURL: "/dashboard",
+            });
+            if (result.error) {
+                toast.error(result.error.message ?? "GitHub sign-in is unavailable.");
+                return;
+            }
+            toast.info("Opening GitHub sign-in...");
+        } catch {
+            toast.error("GitHub sign-in is unavailable. Please try again.");
         }
     }
 
@@ -72,7 +77,6 @@ export default function SignInPage() {
                             </Field>
                         </FieldGroup>
 
-                        {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
                         <Button className="w-full" type="submit" disabled={pending}>
                             {pending ? "Sending code..." : "Send verification code"}
                         </Button>

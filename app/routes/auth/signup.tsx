@@ -11,17 +11,16 @@ import { authClient } from "@/lib/auth-client";
 import { ArrowRight, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export default function SignUpPage() {
     const navigate = useNavigate();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
-    const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
     async function requestCode(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError("");
         setPending(true);
         try {
             const result = await authClient.emailOtp.sendVerificationOtp({
@@ -29,13 +28,14 @@ export default function SignUpPage() {
                 type: "sign-in",
             });
             if (result.error) {
-                setError(result.error.message ?? "Unable to send the verification code.");
+                toast.error(result.error.message ?? "Unable to send the verification code.");
                 return;
             }
             sessionStorage.setItem("der:auth-signup-name", name.trim());
+            toast.success("Verification code sent.");
             navigate("/auth/verify?flow=signup");
         } catch {
-            setError("Unable to send the verification code. Please try again.");
+            toast.error("Unable to send the verification code. Please try again.");
         } finally {
             setPending(false);
         }
@@ -65,7 +65,6 @@ export default function SignUpPage() {
                             </Field>
                         </FieldGroup>
 
-                        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
                         <Button className="w-full gap-2" type="submit" disabled={pending}>
                             {pending ? "Sending code..." : "Start email verification"}
                             {!pending && <ArrowRight className="h-4 w-4" />}

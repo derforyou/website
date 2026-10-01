@@ -36,10 +36,14 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Outlet, redirect, useLocation, useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export async function clientLoader() {
   const session = await authClient.getSession();
-  if (!session.data) throw redirect("/auth/signin");
+  if (!session.data) {
+    toast.error("Please sign in to continue.");
+    throw redirect("/auth/signin");
+  }
   return { user: session.data.user };
 }
 
@@ -173,6 +177,7 @@ export default function MainLayout() {
         if (cancelled) return;
 
         if (!session.data) {
+          toast.error("Your session has expired. Please sign in again.");
           navigate("/auth/signin", { replace: true });
           return;
         }
@@ -180,6 +185,7 @@ export default function MainLayout() {
         setIsCheckingSession(false);
       } catch {
         if (!cancelled) {
+          toast.error("Unable to verify your session.");
           navigate("/auth/signin", { replace: true });
         }
       }
@@ -241,8 +247,17 @@ export default function MainLayout() {
               aria-label="Sign out"
               title="Sign out"
               onClick={async () => {
-                await authClient.signOut();
-                navigate("/auth/signin");
+                try {
+                  const result = await authClient.signOut();
+                  if (result.error) {
+                    toast.error(result.error.message ?? "Unable to sign out.");
+                    return;
+                  }
+                  toast.success("Signed out successfully.");
+                  navigate("/auth/signin");
+                } catch {
+                  toast.error("Unable to sign out. Please try again.");
+                }
               }}
             >
               <LogOut />
