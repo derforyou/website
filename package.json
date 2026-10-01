@@ -92,5 +92,15 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "allowScripts": {
+    "@biomejs/biome@1.9.4": true,
+    "esbuild@0.18.20": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.24.2": true,
+    "sharp@0.33.5": true,
+    "unrs-resolver@1.12.2": true,
+    "workerd@1.20250320.0": true
   }
 }
