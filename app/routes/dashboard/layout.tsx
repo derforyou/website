@@ -198,18 +198,14 @@ export default function MainLayout() {
           return;
         }
 
-        try {
-          const moderationResponse = await fetch("/api/v1/domains/moderation", { method: "GET" });
-          if (!cancelled) {
-            setCanAccessModeration(moderationResponse.ok);
-          }
-        } catch {
-          if (!cancelled) {
-            setCanAccessModeration(false);
-          }
-        }
-
         setIsCheckingSession(false);
+        void fetch("/api/v1/domains/moderation", { method: "GET" })
+          .then((moderationResponse) => {
+            if (!cancelled) setCanAccessModeration(moderationResponse.ok);
+          })
+          .catch(() => {
+            if (!cancelled) setCanAccessModeration(false);
+          });
       } catch {
         if (!cancelled) {
           toast.error("Unable to verify your session.");
