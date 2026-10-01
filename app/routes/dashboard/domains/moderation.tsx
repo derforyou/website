@@ -1,7 +1,18 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { redirect } from "react-router";
 import { toast } from "sonner";
+
+export async function clientLoader() {
+  const response = await fetch("/api/v1/domains/moderation", { method: "GET" });
+  if (!response.ok) {
+    toast.error("Only administrators can access moderation.");
+    throw redirect("/dashboard");
+  }
+
+  return null;
+}
 
 type PendingRequest = {
   id: string;

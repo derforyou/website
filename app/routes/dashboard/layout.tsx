@@ -33,6 +33,7 @@ import {
   LogOut,
   Plus,
   Settings2,
+  ShieldCheck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Outlet, redirect, useLocation, useNavigate } from "react-router";
@@ -52,6 +53,14 @@ const primaryNavigation = [
   { title: "Domains", url: "/dashboard/domains", icon: Globe2 },
 ];
 
+function isSidebarItemActive(currentPath: string, itemUrl: string) {
+  if (itemUrl === "/dashboard") {
+    return currentPath === itemUrl;
+  }
+
+  return currentPath === itemUrl || currentPath.startsWith(`${itemUrl}/`);
+}
+
 const accountNavigation = [
   { title: "API keys", url: "/dashboard/settings/api-keys", icon: KeyRound },
   { title: "Contact profile", url: "/dashboard/settings/contact", icon: ContactRound },
@@ -69,8 +78,14 @@ const pageTitles: Record<string, string> = {
   "/dashboard/settings/api-keys": "API keys",
 };
 
-function AppSidebar() {
+function AppSidebar({ canAccessModeration }: { canAccessModeration: boolean }) {
   const { pathname } = useLocation();
+  const workspaceNavigation = canAccessModeration
+    ? [
+      ...primaryNavigation,
+      { title: "Moderation", url: "/dashboard/domains/moderation", icon: ShieldCheck },
+    ]
+    : primaryNavigation;
 
   return (
     <Sidebar collapsible="icon">
@@ -99,11 +114,11 @@ function AppSidebar() {
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {primaryNavigation.map((item) => (
+              {workspaceNavigation.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.url || pathname.startsWith(`${item.url}/`)}
+                    isActive={isSidebarItemActive(pathname, item.url)}
                     tooltip={item.title}
                   >
                     <Link to={item.url}>
@@ -125,7 +140,7 @@ function AppSidebar() {
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname === item.url || pathname.startsWith(`${item.url}/`)}
+                    isActive={isSidebarItemActive(pathname, item.url)}
                     tooltip={item.title}
                   >
                     <Link to={item.url}>
@@ -161,6 +176,7 @@ export default function MainLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [canAccessModeration, setCanAccessModeration] = useState(false);
   const pageTitle = pageTitles[pathname] ?? "Workspace";
   const sectionTitle = pathname.startsWith("/dashboard/settings")
     ? "Developer"
@@ -180,6 +196,17 @@ export default function MainLayout() {
           toast.error("Your session has expired. Please sign in again.");
           navigate("/auth/signin", { replace: true });
           return;
+        }
+
+        try {
+          const moderationResponse = await fetch("/api/v1/domains/moderation", { method: "GET" });
+          if (!cancelled) {
+            setCanAccessModeration(moderationResponse.ok);
+          }
+        } catch {
+          if (!cancelled) {
+            setCanAccessModeration(false);
+          }
         }
 
         setIsCheckingSession(false);
@@ -204,7 +231,7 @@ export default function MainLayout() {
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar canAccessModeration={canAccessModeration} />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-4 backdrop-blur sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
