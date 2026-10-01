@@ -1,10 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import * as schema from "../../../../server/database/schema";
+import { getReservedNames, normalizeSubdomain, validateSubdomainRequest, ZONE_NAME } from "../../../../server/lib/domain-policy";
 import type { RuntimeEnv } from "../../../../server/lib/env";
 import { createApiDatabase, jsonResponse, methodNotAllowed, problem } from "../../../../server/services/api-auth";
 import type { Route } from "./+types/domains.availability";
-
-const zoneName = "der.my.id";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   if (request.method !== "GET") return methodNotAllowed("GET");
@@ -13,26 +12,37 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   if (!db) return problem(503, "Service Unavailable", "The database is not configured.");
 
   const url = new URL(request.url);
-  const subdomain = url.searchParams.get("subdomain")?.trim().toLowerCase() ?? "";
-  const requestedZone = url.searchParams.get("zone") ?? zoneName;
-  if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(subdomain)) {
-    return problem(400, "Bad Request", "subdomain must be 1 to 63 lowercase letters, numbers, or interior hyphens.");
-  }
-  if (requestedZone !== zoneName) {
-    return problem(400, "Bad Request", `Only the ${zoneName} zone is supported.`);
+  const requestedZone = url.searchParams.get("zone") ?? ZONE_NAME;
+  const subdomain = normalizeSubdomain(url.searchParams.get("subdomain") ?? "");
+
+  if (requestedZone !== ZONE_NAME) {
+    return problem(400, "Bad Request", `Only the ${ZONE_NAME} zone is supported.`);
   }
 
-  const [existing] = await db.select({ id: schema.domain.id })
+  const reserved = await getReservedNames(env);
+  const validation = validateSubdomainRequest(subdomain, reserved);
+  if (!validation.valid) {
+    return problem(400, "Bad Request", validation.reason);
+  }
+
+  const [existingDomain] = await db.select({ id: schema.domain.id })
     .from(schema.domain)
-    .where(eq(schema.domain.subdomain, subdomain))
+    .where(eq(schema.domain.hostname, validation.hostname))
     .limit(1);
-  const available = !existing;
+
+  const [existingRegistration] = await db.select({ id: schema.domainRegistration.id })
+    .from(schema.domainRegistration)
+    .where(and(eq(schema.domainRegistration.hostname, validation.hostname), eq(schema.domainRegistration.status, "pending")))
+    .limit(1);
+
+  const available = !existingDomain && !existingRegistration;
   return jsonResponse({
     data: {
       available,
-      subdomain,
-      hostname: `${subdomain}.${zoneName}`,
+      subdomain: validation.normalized,
+      hostname: validation.hostname,
       status: available ? "available" : "unavailable",
+      reason: available ? "" : "This name is already reserved, in use, or pending review.",
     },
   });
 }

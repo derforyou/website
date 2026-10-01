@@ -131,6 +131,37 @@ export const contact = sqliteTable(
   (table) => [index("contact_email_idx").on(table.email)]
 );
 
+export const domainRegistration = sqliteTable(
+  "domainRegistration",
+  {
+    id: text("id").primaryKey(),
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    subdomain: text("subdomain").notNull(),
+    hostname: text("hostname").notNull(),
+    status: text("status", { enum: ["pending", "approved", "rejected"] })
+      .notNull()
+      .default("pending"),
+    dnsMode: text("dnsMode", { enum: ["managed", "custom"] })
+      .notNull()
+      .default("managed"),
+    customNameservers: text("customNameservers"),
+    notes: text("notes"),
+    rejectedReason: text("rejectedReason"),
+    decidedByUserId: text("decidedByUserId").references(() => user.id, { onDelete: "set null" }),
+    decisionAt: timestamp("decisionAt"),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
+  },
+  (table) => [
+    check("domain_registration_subdomain_lowercase", sql`${table.subdomain} = lower(${table.subdomain})`),
+    index("domain_registration_user_id_idx").on(table.userId),
+    index("domain_registration_status_idx").on(table.status),
+    index("domain_registration_hostname_idx").on(table.hostname),
+  ]
+);
+
 export const domain = sqliteTable(
   "domain",
   {
@@ -143,9 +174,14 @@ export const domain = sqliteTable(
     contactId: text("contactId")
       .notNull()
       .references(() => contact.id, { onDelete: "restrict" }),
+    registrationId: text("registrationId").references(() => domainRegistration.id, { onDelete: "set null" }),
     status: text("status", { enum: ["active", "suspended"] })
       .notNull()
       .default("active"),
+    dnsMode: text("dnsMode", { enum: ["managed", "custom"] })
+      .notNull()
+      .default("managed"),
+    customNameservers: text("customNameservers"),
     dnsSyncStatus: text("dnsSyncStatus", {
       enum: ["not-configured", "pending", "synced", "failed"],
     })
@@ -157,6 +193,7 @@ export const domain = sqliteTable(
   (table) => [
     check("domain_subdomain_lowercase", sql`${table.subdomain} = lower(${table.subdomain})`),
     index("domain_owner_id_idx").on(table.ownerId),
+    index("domain_registration_id_idx").on(table.registrationId),
   ]
 );
 
@@ -221,11 +258,20 @@ export const userRelations = relations(user, ({ many, one }) => ({
   contact: one(contact),
   domains: many(domain),
   apiKeys: many(apiKey),
+  registrations: many(domainRegistration),
+  moderatedDecisions: many(domainRegistration, { relationName: "decidedBy" }),
+}));
+
+export const domainRegistrationRelations = relations(domainRegistration, ({ one, many }) => ({
+  user: one(user, { fields: [domainRegistration.userId], references: [user.id] }),
+  decidedBy: one(user, { fields: [domainRegistration.decidedByUserId], references: [user.id], relationName: "moderatedDecisions" }),
+  domains: many(domain),
 }));
 
 export const domainRelations = relations(domain, ({ one, many }) => ({
   owner: one(user, { fields: [domain.ownerId], references: [user.id] }),
   contact: one(contact, { fields: [domain.contactId], references: [contact.id] }),
+  registration: one(domainRegistration, { fields: [domain.registrationId], references: [domainRegistration.id] }),
   dnsRecords: many(dnsRecord),
 }));
 
@@ -240,11 +286,13 @@ export const schema = {
   verification,
   twoFactor,
   contact,
+  domainRegistration,
   domain,
   dnsRecord,
   apiKey,
   auditLog,
   userRelations,
+  domainRegistrationRelations,
   domainRelations,
   contactRelations,
 };

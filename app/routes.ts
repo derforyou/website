@@ -18,6 +18,7 @@ export default [
     index("routes/dashboard/index.tsx"),
     route("domains", "routes/dashboard/domains/index.tsx"),
     route("domains/register", "routes/dashboard/domains/register.tsx"),
+    route("domains/moderation", "routes/dashboard/domains/moderation.tsx"),
     route("settings", "routes/dashboard/settings/index.tsx"),
     route("settings/account", "routes/dashboard/settings/account.tsx"),
     route("settings/contact", "routes/dashboard/settings/contact.tsx"),
