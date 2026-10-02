@@ -53,6 +53,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "vite preview",
+    "check": "vinext check",
     "deploy": "vinext-cloudflare deploy",
     "skills": "skills",
     "ui": "shadcn"
