@@ -28,7 +28,7 @@ export function getAuth() {
 
   return betterAuth({
     appName: "der.my.id",
-    baseURL: runtimeEnv.BETTER_AUTH_URL,
+    baseURL: runtimeEnv.BETTER_AUTH_URL ?? runtimeEnv.APP_URL,
     secret,
     advanced: { cookiePrefix: "der-my-id" },
     database: drizzleAdapter(getDb(), {

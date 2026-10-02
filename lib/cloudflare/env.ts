@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 
 type RuntimeVariables = {
+  APP_URL?: string;
   BETTER_AUTH_SECRET?: string;
   BETTER_AUTH_URL?: string;
   GITHUB_CLIENT_ID?: string;
