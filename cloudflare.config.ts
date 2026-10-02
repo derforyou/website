@@ -6,7 +6,7 @@ const cache = await createWorkersCacheConfig();
 export default defineConfig({
   worker: defineWorker({
     ...cache,
-    name: "website",
+    name: "open-der",
     entrypoint: "vinext/server/fetch-handler",
     compatibilityDate: "2026-10-02",
     compatibilityFlags: ["nodejs_compat"],
