@@ -3,6 +3,13 @@ import { createWorkersCacheConfig } from "@vinext/cloudflare/cache/config";
 
 const cache = await createWorkersCacheConfig();
 
+const vars = {
+  APP_URL: bindings.text("https://nic.der.my.id"),
+  CLOUDFLARE_ACCOUNT_ID: bindings.text("49e86ef059f7bb2e4d4b999dc8548a9c"),
+  CLOUDFLARE_ZONE_ID: bindings.text("f2fe2b5b04530b11dde6d4e02507bc10"),
+  GITHUB_CLIENT_ID: bindings.text("Ov23liUcDLRRMsf7N0WG"),
+};
+
 export default defineConfig({
   worker: defineWorker({
     ...cache,
@@ -16,6 +23,7 @@ export default defineConfig({
     assets: { notFoundHandling: "none" },
     env: {
       ...cache.env,
+      ...vars,
       ASSETS: bindings.assets(),
       IMAGES: bindings.images(),
       VINEXT_KV_CACHE: bindings.kv({ id: "f9c49d739df24700a338ab9df23223d0" }),
