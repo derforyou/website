@@ -5,6 +5,7 @@
   "packageManager": "pnpm@12.4.2",
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@icons-pack/react-simple-icons": "^13.15.1",
     "@shadcn/react": "^0.3.1",
     "@vinext/cloudflare": "^1.0.0",
     "better-auth": "^1.7.7",
@@ -42,6 +43,7 @@
     "shadcn": "^4.21.0",
     "skills": "^1.7.0",
     "tailwindcss": "latest",
+    "tsx": "^4.23.15",
     "typescript": "latest",
     "vite": "8.3.0"
   },
