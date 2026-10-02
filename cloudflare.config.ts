@@ -17,6 +17,7 @@ export default defineConfig({
     entrypoint: "vinext/server/fetch-handler",
     compatibilityDate: "2026-10-02",
     compatibilityFlags: ["nodejs_compat"],
+    observability: { enabled: true },
     workersDev: true,
     previewUrls: true,
     domains: ["nic.der.my.id"],

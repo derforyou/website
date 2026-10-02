@@ -69,7 +69,12 @@
     "start": "vite preview",
     "check": "vinext check",
     "deploy": "vinext-cloudflare deploy",
-    "typecheck": "tsc -noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --env-file-if-exists=.env --run=db:migrate:apply",
+    "db:migrate:apply": "cf d1 migrations apply ${CLOUDFLARE_DATABASE_ID:?Set CLOUDFLARE_DATABASE_ID in .env} --dir drizzle",
+    "db:migrate-force": "node --env-file-if-exists=.env --run=db:migrate:push-force",
+    "db:migrate:push-force": "drizzle-kit push --force",
+    "typecheck": "cf workers types && tsc -noEmit",
     "skills": "skills",
     "ui": "shadcn"
   },
