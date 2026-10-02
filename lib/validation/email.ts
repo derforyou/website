@@ -5,6 +5,7 @@ export type TransactionalEmail = {
   to: string;
   subject: string;
   text: string;
+  html?: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -12,18 +13,25 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function parseTransactionalEmail(value: unknown): TransactionalEmail {
-  if (!isRecord(value) || typeof value.subject !== "string" || typeof value.text !== "string") {
+  if (
+    !isRecord(value) ||
+    typeof value.subject !== "string" ||
+    typeof value.text !== "string" ||
+    (value.html !== undefined && typeof value.html !== "string")
+  ) {
     throw new AppError(400, "invalid_email_message", "A valid email message is required.");
   }
 
   const subject = value.subject.trim();
   const text = value.text.trim();
+  const html = typeof value.html === "string" ? value.html.trim() : undefined;
   if (
     !subject ||
     subject.length > 200 ||
     /[\r\n\u0000]/.test(subject) ||
     !text ||
-    text.length > 100_000
+    text.length > 100_000 ||
+    (html !== undefined && (!html || html.length > 100_000))
   ) {
     throw new AppError(400, "invalid_email_message", "The email subject or message is invalid.");
   }
@@ -32,5 +40,6 @@ export function parseTransactionalEmail(value: unknown): TransactionalEmail {
     to: normalizeEmailAddress(value.to),
     subject,
     text,
+    ...(html === undefined ? {} : { html }),
   };
 }

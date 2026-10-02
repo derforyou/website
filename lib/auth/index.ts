@@ -4,6 +4,10 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { runtimeEnv } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db";
 import { queueTransactionalEmail } from "@/lib/email/service";
+import {
+  renderPasswordResetEmail,
+  renderVerificationEmail,
+} from "@/lib/email/templates/auth";
 import { account, session, user, verification } from "@/lib/db/schema";
 import {
   AUTH_PASSWORD_MAX_LENGTH,
@@ -38,10 +42,11 @@ export function getAuth() {
       revokeSessionsOnPasswordReset: true,
       resetPasswordTokenExpiresIn: 30 * 60,
       sendResetPassword: async ({ user, url }) => {
+        const content = renderPasswordResetEmail(user.name, url);
         await queueTransactionalEmail({
           to: user.email,
           subject: "Reset your der.my.id password",
-          text: `Use this link to reset your password:\n\n${url}\n\nIf you did not request a password reset, you can ignore this email.`,
+          ...content,
         });
       },
     },
@@ -50,10 +55,11 @@ export function getAuth() {
       autoSignInAfterVerification: true,
       expiresIn: 60 * 60,
       sendVerificationEmail: async ({ user, url }) => {
+        const content = renderVerificationEmail(user.name, url);
         await queueTransactionalEmail({
           to: user.email,
           subject: "Verify your der.my.id email address",
-          text: `Use this link to verify your email address:\n\n${url}\n\nIf you did not create a der.my.id account, you can ignore this email.`,
+          ...content,
         });
       },
     },

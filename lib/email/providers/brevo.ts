@@ -1,7 +1,7 @@
 import { BrevoClient } from "@getbrevo/brevo";
 
 import { runtimeEnv } from "@/lib/cloudflare/env";
-import { TRANSACTIONAL_EMAIL_FROM, type TransactionalEmail } from "@/lib/email/types";
+import { TRANSACTIONAL_EMAIL_SENDER, type TransactionalEmail } from "@/lib/email/types";
 
 export async function sendWithBrevo(message: TransactionalEmail) {
   const apiKey = runtimeEnv.BREVO_API_KEY;
@@ -17,10 +17,11 @@ export async function sendWithBrevo(message: TransactionalEmail) {
 
   await brevo.transactionalEmails.sendTransacEmail(
     {
-      sender: { name: "der.my.id", email: TRANSACTIONAL_EMAIL_FROM },
+      sender: TRANSACTIONAL_EMAIL_SENDER,
       to: [{ email: message.to }],
       subject: message.subject,
       textContent: message.text,
+      ...(message.html ? { htmlContent: message.html } : {}),
     },
     { timeoutInSeconds: 15, maxRetries: 0 },
   );
