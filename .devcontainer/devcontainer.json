@@ -1,0 +1,9 @@
+{
+  "name": "Cloudflare Workers development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "npm install"
+}
