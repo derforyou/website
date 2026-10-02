@@ -1,8 +1,6 @@
 import Link from "next/link";
-import SiCloudflare from "@icons-pack/react-simple-icons/icons/SiCloudflare";
-import SiGithub from "@icons-pack/react-simple-icons/icons/SiGithub";
-import SiResend from "@icons-pack/react-simple-icons/icons/SiResend";
 
+import { BrandIcon } from "@/components/brand-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -50,12 +48,12 @@ export function HomeHero() {
           </div>
           <div className="flex flex-wrap items-center gap-3 pt-2 text-sm text-muted-foreground">
             {[
-              { label: "Cloudflare", Icon: SiCloudflare },
-              { label: "GitHub", Icon: SiGithub },
-              { label: "Resend", Icon: SiResend },
-            ].map(({ label, Icon }) => (
+              { label: "Cloudflare", name: "cloudflare" as const },
+              { label: "GitHub", name: "github" as const },
+              { label: "Resend", name: "resend" as const },
+            ].map(({ label, name }) => (
               <div key={label} className="flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5">
-                <Icon size={14} />
+                <BrandIcon name={name} />
                 <span>{label}</span>
               </div>
             ))}

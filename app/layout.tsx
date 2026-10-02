@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Public_Sans } from "next/font/google";
+import Script from "next/script";
 
+import { SimpleIconsLoader } from "@/components/simple-icons-loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -16,8 +18,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", inter.variable, publicSansHeading.variable)}>
+      <head>
+        <Script id="simple-icons-commonjs-shim" strategy="beforeInteractive">
+          {"window.module = { exports: {} };"}
+        </Script>
+      </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>{children}</ThemeProvider>
+        <SimpleIconsLoader />
       </body>
     </html>
   );

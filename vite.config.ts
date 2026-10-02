@@ -1,13 +1,17 @@
 import { defineConfig } from "vite";
 import vinext from "vinext";
 import { cloudflare } from "@cloudflare/vite-plugin";
-import { responseStoreAdapter } from "@vinext/cloudflare/cache/response-store-adapter";
+import { kvDataAdapter } from "@vinext/cloudflare/cache/kv-data-adapter";
+import { workersCacheCdnAdapter } from "@vinext/cloudflare/cache/workers-cache-cdn-adapter";
 import { imagesOptimizer } from "@vinext/cloudflare/images/images-optimizer";
 
 export default defineConfig({
   plugins: [
     vinext({
-      cache: responseStoreAdapter({ mode: "self-contained" }),
+      cache: {
+        cdn: workersCacheCdnAdapter(),
+        data: kvDataAdapter(),
+      },
       images: { optimizer: imagesOptimizer() },
     }),
     cloudflare({
