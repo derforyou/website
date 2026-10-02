@@ -2,11 +2,14 @@
   "name": "Cloudflare Workers",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    },
     "ghcr.io/devcontainers/features/node:2": {
       "version": "24.18.0",
       "npmVersion": "11.19.0"
     }
   },
   "remoteUser": "vscode",
-  "postCreateCommand": "npm install"
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y neofetch && npm install"
 }
