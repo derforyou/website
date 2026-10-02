@@ -4,7 +4,7 @@
   "features": {
     "ghcr.io/devcontainers/features/node:2": {
       "version": "24.18.0",
-      "npmVersion": "10.9.2"
+      "npmVersion": "11.19.0"
     }
   },
   "remoteUser": "vscode",
