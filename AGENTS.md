@@ -155,7 +155,7 @@ Every major UI section must be checked for:
 - buttons and controls
 - dashboard sidebar behavior
 - header behavior
-- documentation/legal content width
+- legal content width
 
 Avoid fixed widths that can cause horizontal overflow.
 
@@ -210,7 +210,6 @@ Ensure theme switching works correctly across:
 - authentication pages
 - dashboard pages
 - admin pages
-- documentation
 - legal pages
 
 Avoid hydration mismatches caused by theme detection.
@@ -218,27 +217,6 @@ Avoid hydration mismatches caused by theme detection.
 Follow the existing project's Next.js/vinext-compatible theme provider pattern.
 
 Do not introduce a second theme system if the starter already provides one.
-
-### Brand Icons
-
-Use `@icon-packs/react-simple-icons` for brand/company/service icons whenever a corresponding Simple Icons icon exists.
-
-This applies to brands and services such as:
-
-- GitHub
-- Cloudflare
-- Resend
-- other external providers or technologies represented in the UI
-
-Do not manually draw SVG brand logos.
-
-Do not create custom brand icon components when the corresponding icon is available from `@icon-packs/react-simple-icons`.
-
-Use the existing icon package consistently throughout the application.
-
-For generic interface icons, continue using the project's existing icon system and shadcn-compatible icon conventions.
-
-Brand icons and generic UI icons are separate concerns.
 
 ### Primitive Styling Restrictions
 
@@ -602,11 +580,11 @@ Only information permitted by the application's WHOIS policy should be exposed p
 
 ## Static Content
 
-Documentation and legal pages should use Markdown-based content.
+Legal pages should use Markdown-based content.
 
 Do not place long legal documents directly inside React route files.
 
-Use a shared Markdown/Typography rendering system.
+Use a shared Markdown/Typography rendering system for legal pages.
 
 Relevant content includes:
 
@@ -625,7 +603,6 @@ Relevant content includes:
 - Registrant Agreement
 - `.my.id` terms
 - registrar/registry information
-- documentation
 
 Do not add a blog unless explicitly requested.
 
@@ -642,11 +619,6 @@ The public application includes:
 - `/whois`
 - `/whois/[domain]`
 - `/faq`
-- `/docs`
-- `/docs/getting-started`
-- `/docs/domains`
-- `/docs/dns`
-- `/docs/api`
 - `/legal`
 - `/legal/terms`
 - `/legal/privacy`

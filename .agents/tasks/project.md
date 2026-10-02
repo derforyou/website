@@ -16,7 +16,7 @@ The application uses:
 - Drizzle ORM
 - shadcn/ui
 - Cloudflare-compatible server/runtime architecture
-- Markdown-based content for formatted static pages such as legal pages and documentation
+- Markdown-based content for formatted legal pages
 
 The existing shadcn preset has already been applied and all required primitives have already been added.
 
@@ -483,11 +483,6 @@ Implement the public application pages including:
 - `/whois`
 - `/whois/[domain]`
 - `/faq`
-- `/docs`
-- `/docs/getting-started`
-- `/docs/domains`
-- `/docs/dns`
-- `/docs/api`
 - `/legal`
 - `/legal/terms`
 - `/legal/privacy`
@@ -507,15 +502,15 @@ Implement the public application pages including:
 
 Do not create a blog unless explicitly requested.
 
-## Markdown Content
+## Legal Markdown Content
 
-Formatted documentation and legal content must use Markdown typography.
+Formatted legal content must use Markdown typography.
 
 Do not hard-code long legal documents directly inside React route components.
 
-Organize Markdown content in an appropriate content directory and render it through a reusable Markdown/Typography system.
+Organize legal Markdown content in an appropriate content directory and render it through a reusable Markdown/Typography system.
 
-Legal and documentation pages should share a consistent layout and typography implementation.
+Legal pages should share a consistent layout and typography implementation.
 
 Use shadcn-compatible styling.
 
@@ -775,7 +770,7 @@ Do not modify the existing primitive implementation to achieve application styli
 
 Use Tailwind/shadcn conventions already present in the repository.
 
-Maintain visual consistency across public pages, authentication pages, dashboard pages, admin pages, and documentation/legal pages.
+Maintain visual consistency across public pages, authentication pages, dashboard pages, admin pages, and legal pages.
 
 ## Responsive Design, Themes, and Icons
 
@@ -811,7 +806,7 @@ Every major UI section must be checked for:
 - buttons and controls
 - dashboard sidebar behavior
 - header behavior
-- documentation/legal content width
+- legal content width
 
 Avoid fixed widths that can cause horizontal overflow.
 
@@ -866,7 +861,6 @@ Ensure theme switching works correctly across:
 - authentication pages
 - dashboard pages
 - admin pages
-- documentation
 - legal pages
 
 Avoid hydration mismatches caused by theme detection.
@@ -874,27 +868,6 @@ Avoid hydration mismatches caused by theme detection.
 Follow the existing project's Next.js/vinext-compatible theme provider pattern.
 
 Do not introduce a second theme system if the starter already provides one.
-
-### Brand Icons
-
-Use `@icon-packs/react-simple-icons` for brand/company/service icons whenever a corresponding Simple Icons icon exists.
-
-This applies to brands and services such as:
-
-- GitHub
-- Cloudflare
-- Resend
-- other external providers or technologies represented in the UI
-
-Do not manually draw SVG brand logos.
-
-Do not create custom brand icon components when the corresponding icon is available from `@icon-packs/react-simple-icons`.
-
-Use the existing icon package consistently throughout the application.
-
-For generic interface icons, continue using the project's existing icon system and shadcn-compatible icon conventions.
-
-Brand icons and generic UI icons are separate concerns.
 
 ### Primitive Styling Restrictions
 
@@ -1006,7 +979,7 @@ Recommended order:
 13. establish dashboard architecture
 14. establish admin dashboard functionality
 15. establish WHOIS
-16. establish documentation/legal Markdown rendering
+16. establish legal Markdown rendering
 17. establish error handling
 18. establish validation
 19. establish tests
@@ -1036,7 +1009,7 @@ Before considering the implementation complete:
 - Frontend route files must remain orchestrators.
 - Business logic must not be embedded in components.
 - Existing shadcn primitives must remain untouched unless absolutely necessary.
-- Legal and documentation pages must use Markdown typography.
+- Legal pages must use Markdown typography.
 - No unnecessary blog implementation should be added.
 - No DNS record storage should be introduced.
 - No unnecessary role should be introduced.
