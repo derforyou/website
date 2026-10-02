@@ -23,6 +23,15 @@ function redirect(request: NextRequest, pathname: string) {
   return response;
 }
 
+function forbidden() {
+  const response = NextResponse.json(
+    { error: "account_inactive" },
+    { status: 403 },
+  );
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isDashboard = pathname === "/dashboard" || pathname.startsWith("/dashboard/");
@@ -34,11 +43,16 @@ export async function proxy(request: NextRequest) {
   }
 
   const session = await getAuth().api.getSession({ headers: request.headers });
+  const hasSession = session !== null;
   const isActiveUser = session?.user.status === "active";
 
   if (isDashboard) {
-    if (!isActiveUser) {
+    if (!hasSession) {
       return redirect(request, "/login");
+    }
+
+    if (!isActiveUser) {
+      return forbidden();
     }
 
     if (isAdminPage && session.user.role !== "admin") {
@@ -46,6 +60,10 @@ export async function proxy(request: NextRequest) {
     }
 
     return NextResponse.next();
+  }
+
+  if (hasSession && !isActiveUser) {
+    return forbidden();
   }
 
   if (isActiveUser) {
