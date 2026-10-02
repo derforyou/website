@@ -112,7 +112,15 @@ Parenthesized route group names are organizational only and do not appear in URL
 
 Keep the single dashboard architecture: admin pages belong under `app/(dashboard)/dashboard/admin/**` and map to `/dashboard/admin/**`. Do not create a separate top-level admin dashboard.
 
-Keep `app/layout.tsx` as the shared root document and put area-specific shells in a group's `layout.tsx` only when that group needs them. Layouts compose presentation and shared providers; they must not contain business workflows or replace server-side authorization.
+Use the following layout responsibilities:
+
+- `app/layout.tsx` is the required root layout. It owns `<html>`, `<body>`, global CSS, metadata, and providers shared by the whole application. Do not put area-specific navigation or page shells here.
+- `app/(public)/layout.tsx` owns the shared public-site shell, such as public navigation and footer. It wraps public pages only.
+- `app/(auth)/layout.tsx` owns the shared authentication-page shell. Keep it focused on the auth experience and do not include the public-site or dashboard navigation.
+- `app/(dashboard)/layout.tsx` owns the authenticated dashboard shell shared by user and admin pages, such as dashboard navigation and sidebar. Admin pages remain within this same shell.
+- `app/api/**` contains handlers and does not need a visual layout. Keep request authentication and authorization at the appropriate server boundaries.
+
+Layouts compose presentation and shared providers; they must not contain business workflows. A dashboard layout or proxy check must not replace server-side authorization in protected operations and services.
 
 Keep public, auth, and dashboard page sections in their corresponding `components/**` areas. Keep API handlers thin and delegate server-side work to services and repositories.
 
