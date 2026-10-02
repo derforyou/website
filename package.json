@@ -2,19 +2,6 @@
   "name": "website",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "npm@11.19.0",
-  "devEngines": {
-    "runtime": {
-      "name": "node",
-      "version": "24.18.0",
-      "onFail": "error"
-    },
-    "packageManager": {
-      "name": "npm",
-      "version": "11.19.0",
-      "onFail": "error"
-    }
-  },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@getbrevo/brevo": "^6.0.3",
