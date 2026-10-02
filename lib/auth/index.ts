@@ -30,6 +30,7 @@ export function getAuth() {
     appName: "der.my.id",
     baseURL: runtimeEnv.BETTER_AUTH_URL,
     secret,
+    advanced: { cookiePrefix: "der-my-id" },
     database: drizzleAdapter(getDb(), {
       provider: "sqlite",
       schema: { user, account, session, verification },

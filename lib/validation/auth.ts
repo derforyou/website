@@ -46,3 +46,17 @@ export function normalizeAuthName(value: unknown): string {
 
   return name;
 }
+
+export function validateAuthToken(value: unknown): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new AppError(400, "invalid_token", "A valid reset token is required.");
+  }
+
+  return value.trim();
+}
+
+export function validatePasswordConfirmation(password: string, confirmation: string): void {
+  if (password !== confirmation) {
+    throw new AppError(400, "password_mismatch", "Passwords do not match.");
+  }
+}

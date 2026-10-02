@@ -1,7 +1,0 @@
-D1 name = der-website 
-D1 id = 7ad5ee3e-c69a-42d4-8beb-2b737fe4656c
-kv namespace id = f9c49d739df24700a338ab9df23223d0
-kv namespace name = der-website 
-r2 bucket name = der-website 
-
-## aktifkan workers dev domain dan preview urls. aktifkan kustom domain nic.der.my.id aktifkan keep variables.

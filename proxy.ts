@@ -12,6 +12,7 @@ const authPagePaths = new Set([
 function isAuthPage(pathname: string) {
   return (
     authPagePaths.has(pathname) ||
+    pathname.startsWith("/reset-password/") ||
     pathname === "/verify-email" ||
     pathname.startsWith("/verify-email/")
   );
@@ -66,7 +67,7 @@ export async function proxy(request: NextRequest) {
     return forbidden();
   }
 
-  if (isActiveUser) {
+  if (isActiveUser && pathname !== "/verify-email/success") {
     return redirect(request, "/dashboard");
   }
 
@@ -81,6 +82,7 @@ export const config = {
     "/register",
     "/forgot-password",
     "/reset-password",
+    "/reset-password/:path*",
     "/verify-email",
     "/verify-email/:path*",
   ],
