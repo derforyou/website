@@ -7,6 +7,8 @@ type RuntimeVariables = {
   GITHUB_CLIENT_SECRET?: string;
   CLOUDFLARE_API_TOKEN?: string;
   CLOUDFLARE_ZONE_ID?: string;
+  RESEND_API_KEY?: string;
+  BREVO_API_KEY?: string;
 };
 
 export const runtimeEnv = env as typeof env & RuntimeVariables;

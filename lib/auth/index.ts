@@ -3,7 +3,14 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import { runtimeEnv } from "@/lib/cloudflare/env";
 import { getDb } from "@/lib/db";
+import { queueTransactionalEmail } from "@/lib/email/service";
 import { account, session, user, verification } from "@/lib/db/schema";
+import {
+  AUTH_PASSWORD_MAX_LENGTH,
+  AUTH_PASSWORD_MIN_LENGTH,
+  normalizeAuthName,
+  normalizeEmailAddress,
+} from "@/lib/validation/auth";
 
 export function getAuth() {
   const secret = runtimeEnv.BETTER_AUTH_SECRET;
@@ -23,7 +30,46 @@ export function getAuth() {
       provider: "sqlite",
       schema: { user, account, session, verification },
     }),
-    emailAndPassword: { enabled: true },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: true,
+      minPasswordLength: AUTH_PASSWORD_MIN_LENGTH,
+      maxPasswordLength: AUTH_PASSWORD_MAX_LENGTH,
+      revokeSessionsOnPasswordReset: true,
+      resetPasswordTokenExpiresIn: 30 * 60,
+      sendResetPassword: async ({ user, url }) => {
+        await queueTransactionalEmail({
+          to: user.email,
+          subject: "Reset your der.my.id password",
+          text: `Use this link to reset your password:\n\n${url}\n\nIf you did not request a password reset, you can ignore this email.`,
+        });
+      },
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      autoSignInAfterVerification: true,
+      expiresIn: 60 * 60,
+      sendVerificationEmail: async ({ user, url }) => {
+        await queueTransactionalEmail({
+          to: user.email,
+          subject: "Verify your der.my.id email address",
+          text: `Use this link to verify your email address:\n\n${url}\n\nIf you did not create a der.my.id account, you can ignore this email.`,
+        });
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (newUser) => ({
+            data: {
+              ...newUser,
+              email: normalizeEmailAddress(newUser.email),
+              name: normalizeAuthName(newUser.name),
+            },
+          }),
+        },
+      },
+    },
     user: {
       additionalFields: {
         role: { type: "string", required: false, defaultValue: "user", input: false },
