@@ -700,7 +700,13 @@ The same rule applies to API endpoints.
 
 Email verification is handled by Better Auth.
 
-Resend is the email delivery provider.
+Transactional email, including Better Auth verification and password-reset messages, uses Resend as the primary provider and Brevo as the fallback.
+
+Route email through one server-side delivery service (for example, `lib/email/**`) with separate provider-specific adapters. Wire Better Auth email callbacks through this service; do not replace or duplicate Better Auth.
+
+For each message, attempt Resend once. If the provider request fails, including a network/API error or rate/quota limit, make at most one direct fallback attempt with Brevo. If Resend succeeds, do not send through Brevo. Validate the recipient and message before provider dispatch so invalid input does not trigger fallback.
+
+The Brevo fallback must call its provider adapter directly, not the shared dispatcher. Do not recursively invoke the dispatcher or retry either provider from the fallback path. If both providers fail, stop and return a sanitized failure; log provider outcomes without credentials or message secrets. This limits a send operation to at most two provider attempts and prevents an unbounded retry loop.
 
 The application must require email verification where the product flow requires it.
 
@@ -999,7 +1005,7 @@ Before considering the implementation complete:
 - Better Auth must work with the configured D1 database.
 - Email/password authentication must work.
 - GitHub OAuth integration must be correctly wired.
-- Email verification must use Resend through the configured integration.
+- Email delivery must use Resend first and allow at most one Brevo fallback attempt when Resend fails or reaches a provider limit.
 - Web sessions must be protected.
 - API bearer authentication must be protected.
 - Admin authorization must be enforced server-side.

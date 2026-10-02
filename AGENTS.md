@@ -15,7 +15,7 @@ The service provides free `<name>.der.my.id` domain registration, domain ownersh
 - Cloudflare D1
 - Drizzle ORM
 - shadcn/ui
-- Resend
+- Resend (primary email provider) and Brevo (fallback email provider)
 - Cloudflare API
 - OpenAPI
 
@@ -418,7 +418,15 @@ Supported authentication methods:
 - email/password
 - GitHub OAuth
 
-Resend is the email delivery service for email verification.
+Use Resend as the primary email provider and Brevo as the fallback for transactional email, including Better Auth verification and password-reset messages.
+
+### Email Delivery Failover
+
+Route email through one server-side delivery service (for example, `lib/email/**`) with separate provider-specific adapters. Wire Better Auth email callbacks through this service; do not replace or duplicate Better Auth.
+
+For each message, attempt Resend once. If the provider request fails, including a network/API error or rate/quota limit, make at most one direct fallback attempt with Brevo. If Resend succeeds, do not send through Brevo. Validate the recipient and message before provider dispatch so invalid input does not trigger fallback.
+
+The Brevo fallback must call its provider adapter directly, not the shared dispatcher. Do not recursively invoke the dispatcher or retry either provider from the fallback path. If both providers fail, stop and return a sanitized failure; log provider outcomes without credentials or message secrets. This limits a send operation to at most two provider attempts and prevents an unbounded retry loop.
 
 Do not implement a second authentication system beside Better Auth.
 
