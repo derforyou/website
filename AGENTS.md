@@ -420,6 +420,8 @@ Supported authentication methods:
 
 Use Resend as the primary email provider and Brevo as the fallback for transactional email, including Better Auth verification and password-reset messages.
 
+Use `no-reply@notify.der.my.id` as the sender address for all transactional email. Keep this sender address unchanged when falling back from Resend to Brevo.
+
 ### Email Delivery Failover
 
 Route email through one server-side delivery service (for example, `lib/email/**`) with separate provider-specific adapters. Wire Better Auth email callbacks through this service; do not replace or duplicate Better Auth.

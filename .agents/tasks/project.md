@@ -702,6 +702,8 @@ Email verification is handled by Better Auth.
 
 Transactional email, including Better Auth verification and password-reset messages, uses Resend as the primary provider and Brevo as the fallback.
 
+Use `no-reply@notify.der.my.id` as the sender address for all transactional email. Keep this sender address unchanged when falling back from Resend to Brevo.
+
 Route email through one server-side delivery service (for example, `lib/email/**`) with separate provider-specific adapters. Wire Better Auth email callbacks through this service; do not replace or duplicate Better Auth.
 
 For each message, attempt Resend once. If the provider request fails, including a network/API error or rate/quota limit, make at most one direct fallback attempt with Brevo. If Resend succeeds, do not send through Brevo. Validate the recipient and message before provider dispatch so invalid input does not trigger fallback.
