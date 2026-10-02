@@ -11,7 +11,10 @@ const publicSansHeading = Public_Sans({ subsets: ["latin"], variable: "--font-he
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "der.my.id | Free .der.my.id domains",
+  title: {
+    default: "der.my.id | Free .der.my.id domains",
+    template: "%s | der.my.id",
+  },
   description: "Register and manage memorable .der.my.id domains with a fast, modern dashboard.",
 };
 
