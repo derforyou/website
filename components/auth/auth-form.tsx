@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Github, LoaderCircle } from "lucide-react";
+import { SiGithub } from "@icons-pack/react-simple-icons";
+import { LoaderCircle } from "lucide-react";
 
 import { useAuthForm } from "@/hooks/use-auth-form";
 import { Button } from "@/components/ui/button";
@@ -169,7 +170,7 @@ export function AuthForm({ mode, token = "" }: { mode: AuthFormMode; token?: str
             type="button"
             variant="outline"
           >
-            <Github />
+            <SiGithub />
             GitHub
           </Button>
         </div>
