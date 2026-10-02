@@ -55,6 +55,7 @@
     "start": "vite preview",
     "check": "vinext check",
     "deploy": "vinext-cloudflare deploy",
+    "typecheck": "tsc -noEmit",
     "skills": "skills",
     "ui": "shadcn"
   }

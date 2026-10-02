@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { SiCloudflare, SiGithub, SiResend } from "@icons-pack/react-simple-icons";
+import SiCloudflare from "@icons-pack/react-simple-icons/icons/SiCloudflare";
+import SiGithub from "@icons-pack/react-simple-icons/icons/SiGithub";
+import SiResend from "@icons-pack/react-simple-icons/icons/SiResend";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
