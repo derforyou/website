@@ -7,10 +7,12 @@
     "@base-ui/react": "^1.8.0",
     "@shadcn/react": "^0.3.1",
     "@vinext/cloudflare": "^1.0.0",
+    "better-auth": "^1.7.7",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "cn": "^0.4.0",
     "date-fns": "^4.4.0",
+    "drizzle-orm": "^0.45.3",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.5.0",
     "lucide-react": "^1.49.0",
@@ -36,7 +38,9 @@
     "@vitejs/plugin-react": "^6.1.1",
     "@vitejs/plugin-rsc": "^0.5.35",
     "cf": "1.0.0-beta.10",
+    "drizzle-kit": "^0.31.11",
     "shadcn": "^4.21.0",
+    "skills": "^1.7.0",
     "tailwindcss": "latest",
     "typescript": "latest",
     "vite": "8.3.0"
@@ -47,6 +51,7 @@
     "build": "vite build",
     "start": "vite preview",
     "deploy": "vinext-cloudflare deploy",
+    "skills": "skills",
     "ui": "shadcn"
   }
 }
