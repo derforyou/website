@@ -73,7 +73,7 @@ A route file must not contain the complete implementation of a page.
 
 For example:
 
-`app/page.tsx`
+`app/(public)/page.tsx`
 
 must orchestrate sections from:
 
@@ -98,6 +98,23 @@ Use page-specific component sections such as:
 - `components/home/cta.tsx`
 
 Use an appropriate directory structure for every major page.
+
+## App Router Route Groups
+
+Organize routes by application area using these route groups:
+
+- `app/(public)/**` — public pages, including the home page at `app/(public)/page.tsx`
+- `app/(auth)/**` — login, registration, password recovery, and email verification pages
+- `app/(dashboard)/dashboard/**` — authenticated user and admin dashboard pages
+- `app/api/**` — API route handlers, including Better Auth and versioned API endpoints
+
+Parenthesized route group names are organizational only and do not appear in URLs. For example, `app/(public)/about/page.tsx` maps to `/about`, while `app/(auth)/login/page.tsx` maps to `/login`.
+
+Keep the single dashboard architecture: admin pages belong under `app/(dashboard)/dashboard/admin/**` and map to `/dashboard/admin/**`. Do not create a separate top-level admin dashboard.
+
+Keep `app/layout.tsx` as the shared root document and put area-specific shells in a group's `layout.tsx` only when that group needs them. Layouts compose presentation and shared providers; they must not contain business workflows or replace server-side authorization.
+
+Keep public, auth, and dashboard page sections in their corresponding `components/**` areas. Keep API handlers thin and delegate server-side work to services and repositories.
 
 ## No Business Logic in Routes or Components
 
