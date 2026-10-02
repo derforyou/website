@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import {
@@ -13,6 +13,11 @@ export type DomainRecord = Pick<
   typeof domains.$inferSelect,
   "id" | "userId" | "name" | "label" | "status" | "dnsMode" | "createdAt"
 >;
+
+export type DomainDnsConfiguration = Pick<
+  typeof domains.$inferSelect,
+  "id" | "userId" | "name" | "status" | "dnsMode"
+> & { nameservers: string[] };
 
 export async function findDomainByLabel(label: string): Promise<DomainRecord | null> {
   const [domain] = await getDb()
@@ -46,6 +51,91 @@ export async function listDomainsForUser(userId: string): Promise<DomainRecord[]
     .from(domains)
     .where(eq(domains.userId, userId))
     .orderBy(desc(domains.createdAt));
+}
+
+export async function findDomainDnsConfigurationForUser(
+  domainId: string,
+  userId: string,
+): Promise<DomainDnsConfiguration | null> {
+  const rows = await getDb()
+    .select({
+      id: domains.id,
+      userId: domains.userId,
+      name: domains.name,
+      status: domains.status,
+      dnsMode: domains.dnsMode,
+      nameserver: domainNameservers.nameserver,
+    })
+    .from(domains)
+    .leftJoin(domainNameservers, eq(domainNameservers.domainId, domains.id))
+    .where(and(eq(domains.id, domainId), eq(domains.userId, userId)))
+    .orderBy(asc(domainNameservers.position));
+
+  if (rows.length === 0) {
+    return null;
+  }
+
+  return {
+    id: rows[0].id,
+    userId: rows[0].userId,
+    name: rows[0].name,
+    status: rows[0].status,
+    dnsMode: rows[0].dnsMode,
+    nameservers: rows.flatMap((row) => (row.nameserver ? [row.nameserver] : [])),
+  };
+}
+
+export async function replaceDomainDnsConfiguration(
+  domainId: string,
+  userId: string,
+  actorUserId: string,
+  dnsMode: "shared" | "custom",
+  nameservers: string[],
+): Promise<boolean> {
+  const db = getDb();
+  const [ownedDomain] = await db
+    .select({ id: domains.id })
+    .from(domains)
+    .where(and(eq(domains.id, domainId), eq(domains.userId, userId)))
+    .limit(1);
+
+  if (!ownedDomain) {
+    return false;
+  }
+
+  const updateDomain = db
+    .update(domains)
+    .set({ dnsMode, updatedAt: new Date() })
+    .where(and(eq(domains.id, domainId), eq(domains.userId, userId)))
+    .returning({ id: domains.id });
+  const deleteNameservers = db
+    .delete(domainNameservers)
+    .where(eq(domainNameservers.domainId, domainId));
+  const insertEvent = db.insert(domainEvents).values({
+    id: crypto.randomUUID(),
+    domainId,
+    actorUserId,
+    event: "dns_mode_changed",
+    metadata: { dnsMode, nameservers },
+  });
+
+  const results = nameservers.length > 0
+    ? await db.batch([
+        updateDomain,
+        deleteNameservers,
+        db.insert(domainNameservers).values(
+          nameservers.map((nameserver, position) => ({
+            id: crypto.randomUUID(),
+            domainId,
+            nameserver,
+            position,
+          })),
+        ),
+        insertEvent,
+      ])
+    : await db.batch([updateDomain, deleteNameservers, insertEvent]);
+
+  return results[0].length > 0;
 }
 
 export async function createDomainRegistration(
