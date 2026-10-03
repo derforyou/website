@@ -54,6 +54,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "vite preview",
+    "test:auth:schema": "node --experimental-strip-types --test tests/auth/*.test.mjs",
+    "test:live:auth": "node --test tests/live/auth-*.test.mjs",
     "check": "vinext check",
     "deploy": "vinext-cloudflare deploy",
     "db:generate": "drizzle-kit generate",
