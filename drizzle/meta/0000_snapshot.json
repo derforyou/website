@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ea2855b3-24ce-44f4-ba50-29eefd1289b6",
+  "id": "0d256612-e176-47bb-a9e2-7f816d648bcd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -59,6 +59,13 @@
         "refresh_token_expires_at": {
           "name": "refresh_token_expires_at",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_token": {
+          "name": "id_token",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

@@ -7,6 +7,7 @@ CREATE TABLE `account` (
 	`refresh_token` text,
 	`access_token_expires_at` integer,
 	`refresh_token_expires_at` integer,
+	`id_token` text,
 	`scope` text,
 	`password` text,
 	`created_at` integer DEFAULT (unixepoch() * 1000) NOT NULL,
