@@ -17,6 +17,20 @@ export default defineConfig({
     entrypoint: "vinext/server/fetch-handler",
     compatibilityDate: "2026-10-02",
     compatibilityFlags: ["nodejs_compat"],
+    observability: {
+      logs: {
+        enabled: true,
+        headSamplingRate: 1,
+        invocationLogs: true,
+        persist: true,
+      },
+      traces: {
+        enabled: true,
+        headSamplingRate: 1,
+        persist: true,
+      },
+      issues: { enabled: true },
+    },
     workersDev: true,
     previewUrls: false,
     domains: ["nic.der.my.id"],
