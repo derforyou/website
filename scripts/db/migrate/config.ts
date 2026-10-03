@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 export type MigrationOptions = {
   databaseId: string;
   directory: string;
@@ -7,7 +9,7 @@ export type MigrationOptions = {
 
 export function parseMigrationOptions(
   args: string[],
-  environment: Record<string, string | undefined> = process.env,
+  databaseId = readD1DatabaseId(),
 ): MigrationOptions {
   let directory = "drizzle";
   let local = false;
@@ -32,10 +34,27 @@ export function parseMigrationOptions(
     }
   }
 
-  const databaseId = environment.CLOUDFLARE_DATABASE_ID?.trim();
-  if (!databaseId) {
-    throw new Error("CLOUDFLARE_DATABASE_ID is required. Set it in .env or the environment.");
+  const normalizedDatabaseId = databaseId.trim();
+  if (!normalizedDatabaseId) throw new Error("D1 binding DB has an empty database ID.");
+
+  return { databaseId: normalizedDatabaseId, directory, local, yes };
+}
+
+export function readD1DatabaseId(configPath = "cloudflare.config.ts"): string {
+  let config: string;
+  try {
+    config = readFileSync(configPath, "utf8");
+  } catch (error) {
+    throw new Error(`Could not read Cloudflare config at ${configPath}.`, { cause: error });
   }
 
-  return { databaseId, directory, local, yes };
+  const databaseBinding = config.match(
+    /\bDB\s*:\s*bindings\.d1\(\s*\{\s*id\s*:\s*["']([^"']+)["']/,
+  );
+  const databaseId = databaseBinding?.[1];
+  if (!databaseId) {
+    throw new Error(`Could not find a static DB: bindings.d1({ id: "..." }) binding in ${configPath}.`);
+  }
+
+  return databaseId;
 }

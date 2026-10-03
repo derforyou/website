@@ -17,7 +17,7 @@ async function main() {
         "Usage: npm run db:migrate [-- --local] [--dir <path>] [--yes]",
         "",
         "Apply pending Cloudflare D1 migrations with interactive confirmation by default.",
-        "Set CLOUDFLARE_DATABASE_ID in .env or the environment.",
+        "The D1 database ID is read from the DB binding in cloudflare.config.ts.",
         "",
         "  --local       Apply migrations to the local D1 database",
         "  --dir <path>  Migration directory (default: drizzle)",

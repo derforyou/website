@@ -5,7 +5,7 @@ import { parseMigrationOptions } from "../../../scripts/db/migrate/config.ts";
 
 test("migration options require a D1 database ID", () => {
   assert.throws(
-    () => parseMigrationOptions([], {}),
-    /CLOUDFLARE_DATABASE_ID is required/,
+    () => parseMigrationOptions([], ""),
+    /D1 binding DB has an empty database ID/,
   );
 });
